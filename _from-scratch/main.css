@@ -1,0 +1,15 @@
+.player {
+    background-image: url('images/dino-sprites.avif');
+    width: 100px;
+    height: 100px;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    transition: all cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.player.backward {
+    transform: scaleX(-1);
+}
