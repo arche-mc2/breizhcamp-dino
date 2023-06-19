@@ -1,15 +1,44 @@
+body {
+    overflow: hidden;
+}
+
+.overlay {
+    background: rgba(255, 255, 255, .5);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
 .player {
     background-image: url('images/dino-sprites.avif');
     width: 100px;
     height: 100px;
 
     position: absolute;
-    top: 0;
-    left: 0;
 
-    transition: all cubic-bezier(0.165, 0.84, 0.44, 1);
+    z-index: 999;
+
+    transition: all ease-out .2s;
+
+    border: 1px solid red; /* debug lol */
 }
 
 .player.backward {
     transform: scaleX(-1);
+}
+
+.wall {
+    position: absolute;
+}
+
+.wall>div {
+    display: inline-block;
+    border: 1px solid white;
+    height: 100%;
+}
+
+.wall>div:hover {
+    border: 1px solid black;
 }
