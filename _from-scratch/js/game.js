@@ -5,13 +5,14 @@ import { Wall } from './wall.js';
 
 const BOUND_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', 'Space'];
 
+export const MOVE_PAD = 5; // distance in pixel of a single move
+
 const AVAILABLE_BGS = [
     'gta.jpg',
     'pokemon.webp',
     'pokemon-2.jfif',
     'dinan.png',
     'st-malo.jpg_large',
-    'paris.jfif',
     'new-york.jpg',
     'tokyo.jpg',
     'jurassic-park-1.jpg',
@@ -90,37 +91,36 @@ export class Game {
             const pressingKeys = this.getPressingKeys();
 
             if (pressingKeys.length) {
-                pressingKeys.forEach(code => this.player.handleCommand(code));
+                pressingKeys.forEach(code => this.handleCommand(code));
             } else {
                 setTimeout(_ => this.player.stop(), 10);
             }
-        }, 50);
+        }, 15);
+    }
+
+    handleCommand(keyCode) {
+        const moveX = keyCode === 'ArrowLeft' ? -MOVE_PAD : (keyCode === 'ArrowRight' ? MOVE_PAD : null);
+
+        if (moveX && this.player.canMove({ x: moveX })) {
+            this.player.moveX(moveX);
+        } else if (keyCode === 'ArrowDown' && this.player.canMove({ y: -MOVE_PAD })) {
+            this.player.moveY(-MOVE_PAD);
+        }
+
+        if (keyCode === 'Space') {
+            this.player.jump();
+        }
     }
 
     updateGameSize() {
         this.areaSize = { width: window.innerWidth, height: window.innerHeight };
     }
 
+    // @TODO: place in a global main loop ?
     initGravity() {
-        setInterval(_ => {
-            if (!this.player.raising) {
-                this.fall(this.player);
-            }
-        }, 50);
-    }
-
-    /** @param {GameObject} gameo */
-    fall(gameObject) {
-        gameObject.falling = true;
-
-        let fallSpeed = 10;
-
-        while (!this.outOfBoundsData(gameObject.potentialCoords({ y: -1 * fallSpeed++ }), gameObject.dimension)
-            && !this.collides(gameObject.potentialCoords)) {
-            gameObject.moveY(-1 * (fallSpeed));
-        }
-
-        gameObject.falling = false;
+        setInterval(() => {
+            this.gameObjects.filter(go => go.shouldFall && !go.falling).forEach(go => go.fall());
+        }, 100);
     }
 
     /** @param {GameObject} go */
@@ -142,15 +142,14 @@ export class Game {
     }
 
     /**
-     * @param {Coords} coords 
-     * @param {Dimension} dimension 
+     * @param {Coords} coords
+     * @param {Dimension} dimension
      * @returns boolean
      */
     collidesData(uuid, coords, dimension) {
         return this.gameObjects.some(go => {
             if (go.uuid != uuid && Util.checkCollision(coords, dimension, go.coords, go.dimension)) {
-                // ca déconne forcément vu que j'ai pas mis les mêmes unités -_- (% pour les walls, px pour le player ...)
-                console.log('Collision found : ', go, uuid, coords, dimension);
+                console.log('Collision found : ', coords, dimension, go, uuid);
                 return true;
             }
 

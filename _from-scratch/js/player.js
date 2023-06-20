@@ -2,7 +2,6 @@ import { GameObject } from './item.js';
 
 const SPRITE_WIDTH = 100;
 const SPRITE_HEIGHT = 100;
-const MOVE_PAD = 10; // distance in pixel of a single move
 const FPS = 15;
 
 export class Player extends GameObject {
@@ -15,7 +14,16 @@ export class Player extends GameObject {
 
     dimension = { width: SPRITE_WIDTH, height: SPRITE_HEIGHT };
 
+    canJump = true;
+
     animRunner;
+
+    constructor() {
+        super();
+
+        // subject to gravity
+        this.shouldFall = true;
+    }
 
     init() {
         this.el = this.createElement();
@@ -51,20 +59,6 @@ export class Player extends GameObject {
         // this.animRunner = setInterval(_ => this.refreshSprite(), 800 / CharAnim.MAX[anim]);
     }
 
-    handleCommand(keyCode) {
-        if (keyCode === 'ArrowLeft') {
-            this.moveX(-MOVE_PAD);
-        } else if (keyCode === 'ArrowRight') {
-            this.moveX(MOVE_PAD);
-        } else if (keyCode === 'ArrowDown') {
-            this.moveY(-MOVE_PAD);
-        } else if (keyCode === 'ArrowUp') {
-            this.moveY(MOVE_PAD);
-        } else if (keyCode === 'Space') {
-            this.jump();
-        }
-    }
-
     moveX(amount) {
         // l'afficher à l'envers, comme s'il partait sur la gauche
         this.el.classList.toggle('backward', amount < 0);
@@ -88,15 +82,31 @@ export class Player extends GameObject {
         this.playAnim(CharAnim.IDLE);
     }
 
+    // @TODO: ca va pas, il faut interdire de sauter tant qu'on saute ET tant qu'on tombe, ce qui doit arriver tout de suite après
+    // or pour l'instant on a la latence de la boucle principale qui permet un mini double saut ... (bref c'est moche et y'a trop d'attributs)
+    // @TODO: maybe add a "onTheFloor" boolean to make sure we can jump ?
     jump() {
-        this.raising = true;
+        console.log('CanJump ? Falling ? Coords !', this.canJump, this.falling, this.coords);
 
-        const jumpLoop = setInterval(_ => this.moveY(MOVE_PAD), 30);
+        if (!this.canJump || this.falling) {
+            return;
+        }
+        
+        this.canJump = false;
+
+        let jumpSpeed = 30;
+
+        // go high for a certain amount of time .. @TODO: replace with amount of space
+        const jumpLoop = setInterval(_ => {
+            if (this.canMove({ y: --jumpSpeed })) {
+                this.moveY(jumpSpeed);
+            }
+        }, 30);
 
         setTimeout(_ => {
-            this.raising = false;
+            this.canJump = true;
             clearInterval(jumpLoop);
-        }, 500);
+        }, 300);
     }
 
     updateCoords() {

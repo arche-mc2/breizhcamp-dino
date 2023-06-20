@@ -24,7 +24,7 @@ export class Wall extends GameObject {
         }
 
         el.style.height = squareDim + 'px';
-        el.style.top = this.coords.y + 'px';
+        el.style.bottom = this.coords.y + 'px';
         el.style.left = this.coords.x + 'px';
 
         document.body.appendChild(el);
