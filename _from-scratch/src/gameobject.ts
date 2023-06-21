@@ -1,26 +1,21 @@
-import { Game, MOVE_PAD } from "./game.js";
+import { Game, MOVE_PAD } from "./game";
 
 export class Coords {
-    /** @type {number} */
-    x;
-    /** @type {number} */
-    y;
+    x?: number;
+    y?: number;
 }
 
 export class Dimension {
-    /** @type {number} */
-    width;
-    /** @type {number} */
-    height;
+    width: number;
+    height: number;
 }
 
-export class GameObject {
-    /** @type {string} */
-    uuid;
-    /** @type {Dimension} */
-    dimension;
-    /** @type {Coords} */
-    coords = { x: 0, y: 0 };
+export abstract class GameObject {
+    protected el: HTMLElement;
+
+    uuid: string;
+    dimension: Dimension;
+    coords: Coords = { x: 0, y: 0 };
 
     // subject to gravity
     shouldFall = false;
@@ -28,27 +23,30 @@ export class GameObject {
     // must handle collision
     hasCollision = true;
 
-    potentialCoords(coords) {
+    potentialCoords(coords: Coords) {
         return {
             x: this.coords.x + (coords.x || 0),
             y: this.coords.y + (coords.y || 0)
         };
     }
 
-    /** @param {number} amount */
-    moveX(amount) {
+    updateCoords() {
+        this.el.style.bottom = this.coords.y + 'px';
+        this.el.style.left = this.coords.x + 'px';
+    }
+
+    moveX(amount: number) {
         this.coords.x += amount;
         this.updateCoords();
     }
 
-    /** @param {number} amount */
-    moveY(amount) {
+    moveY(amount: number) {
         this.coords.y += amount;
         this.updateCoords();
     }
 
     // @TODO: change this to get max move left before collision ? :)
-    canMove(coords) {
+    canMove(coords: Coords) {
         const potentialCoords = this.potentialCoords(coords);
 
         return !Game.getInstance().outOfBoundsData(potentialCoords, this.dimension)
@@ -72,6 +70,8 @@ export class GameObject {
             }
         }, 15);
     }
+
+    abstract display(): void;
 }
 
 class Item {

@@ -1,14 +1,11 @@
-import { GameObject } from './item.js';
+import { GameObject } from './gameobject';
 
 const SPRITE_WIDTH = 100;
 const SPRITE_HEIGHT = 100;
 const FPS = 15;
 
 export class Player extends GameObject {
-    /** @type {HTMLDivElement} */
-    el;
-    /** @type {number} */
-    currentAnim = 0;
+    currentAnim: number = 0;
     /** @type {number} */
     spriteNumber = 0;
 
@@ -16,7 +13,7 @@ export class Player extends GameObject {
 
     canJump = true;
 
-    animRunner;
+    animRunner: any; // setInterval() ref
 
     constructor() {
         super();
@@ -25,7 +22,7 @@ export class Player extends GameObject {
         this.shouldFall = true;
     }
 
-    init() {
+    display() {
         this.el = this.createElement();
         document.body.appendChild(this.el);
 
@@ -45,7 +42,7 @@ export class Player extends GameObject {
         this.playAnim(CharAnim.IDLE);
     }
 
-    playAnim(anim) {
+    playAnim(anim: number) {
         if (this.currentAnim === anim) {
             return;
         }
@@ -59,23 +56,19 @@ export class Player extends GameObject {
         // this.animRunner = setInterval(_ => this.refreshSprite(), 800 / CharAnim.MAX[anim]);
     }
 
-    moveX(amount) {
+    moveX(amount: number) {
         // l'afficher à l'envers, comme s'il partait sur la gauche
         this.el.classList.toggle('backward', amount < 0);
 
         this.playAnim(CharAnim.RUN);
 
-        if (!super.moveX(amount)) {
-            this.stop();
-        }
+        super.moveX(amount);
     }
 
-    moveY(amount) {
+    moveY(amount: number) {
         this.playAnim(CharAnim.RUN);
 
-        if (!super.moveY(amount)) {
-            this.stop();
-        }
+        super.moveY(amount);
     }
 
     stop() {
@@ -91,7 +84,7 @@ export class Player extends GameObject {
         if (!this.canJump || this.falling) {
             return;
         }
-        
+
         this.canJump = false;
 
         let jumpSpeed = 30;
@@ -103,15 +96,10 @@ export class Player extends GameObject {
             }
         }, 30);
 
-        setTimeout(_ => {
+        setTimeout(() => {
             this.canJump = true;
             clearInterval(jumpLoop);
         }, 300);
-    }
-
-    updateCoords() {
-        this.el.style.bottom = this.coords.y + 'px';
-        this.el.style.left = this.coords.x + 'px';
     }
 
     refreshSprite() {

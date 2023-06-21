@@ -1,16 +1,16 @@
-import { Game } from './game.js';
-import { GameObject } from './item.js';
-import { Util } from './util.js';
+import { Game } from './game';
+import { GameObject } from './gameobject';
+import { Util } from './util';
 
 const BLOCK_COLORS = ['cyan', 'magenta', 'pink', 'turquoise', 'purple']; // etc, we want shiny colors :)
 
 export class Wall extends GameObject {
 
-    blockCount;
+    blockCount: number;
 
     orientation = 0; // 0: horizontal, 1: vertical
 
-    print() {
+    display() {
         const el = document.createElement('div');
         el.classList.add('wall');
 
@@ -29,19 +29,22 @@ export class Wall extends GameObject {
 
         document.body.appendChild(el);
 
-        setTimeout(_ => this.dimension = { width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height });
+        setTimeout(() => this.dimension = { width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height });
 
         return el;
     }
 
-    static random() {
+    static random(maxHeight?: number) {
         const w = new Wall();
 
         w.blockCount = Util.rand(1, 10);
 
         const areaSize = Game.getInstance().areaSize;
 
-        w.coords = { x: areaSize.width * Util.rand(10, 90) / 100, y: areaSize.height * Util.rand(10, 90) / 100 };
+        w.coords = {
+            x: areaSize.width * Util.rand(10, 90) / 100,
+            y: areaSize.height * Util.rand(10, maxHeight || 90) / 100
+        };
 
         return w;
     }

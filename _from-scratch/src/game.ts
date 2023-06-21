@@ -1,7 +1,7 @@
-import { Coords, Dimension, GameObject } from './item.js';
-import { Player } from './player.js';
-import { Util } from './util.js';
-import { Wall } from './wall.js';
+import { Coords, Dimension, GameObject } from './gameobject';
+import { Player } from './player';
+import { Util } from './util';
+import { Wall } from './wall';
 
 const BOUND_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', 'Space'];
 
@@ -21,26 +21,26 @@ const AVAILABLE_BGS = [
 ];
 
 export class Game {
-    /** @type {Player} */
-    player;
+    private player: Player;
+    private pressingKeys: {[key: string]: boolean} = {};
+    private gameObjects: GameObject[] = [];
+    private _areaSize: Dimension;
 
-    /** @type {[key: string]: boolean} pressingKeys */
-    pressingKeys = {};
-
-    /** @type {Dimension} */
-    areaSize;
-
-    /** @type {GameObject[]} */
-    gameObjects = [];
+    private static _instance: Game;
 
     constructor() {
+    }
+
+    static new() {
+        this._instance = new Game();
+        return this._instance;
     }
 
     start() {
         this.loadBackground();
         this.updateGameSize();
 
-        this.player = new Player().init();
+        this.player = new Player();
         this.addGameObject(this.player);
 
         this.addWalls(3);
@@ -51,19 +51,19 @@ export class Game {
         return this;
     }
 
-    addWalls(count) {
-        [...Array(count)]
-            .map(_ => Wall.random())
-            .forEach(w => {
-                w.print();
-                this.addGameObject(w);
-            });
+    // @TODO: make something smart, like we're always able to climb to the top :) (enoug platform and not too far away)
+    // method like isReachable() ? based on a max jump / distance possible
+    addWalls(count: number) {
+        Util.rangeArray(1, count).forEach(i => this.addGameObject(Wall.random((i + 1) * 30)));
     }
 
-    /** @param {GameObject} go */
-    addGameObject(go) {
+    addGameObject(go: GameObject, autoDisplay = true) {
         if (!go.uuid) {
             go.uuid = Util.uuid();
+        }
+
+        if (autoDisplay) {
+            go.display();
         }
 
         this.gameObjects.push(go);
@@ -87,18 +87,18 @@ export class Game {
             this.pressingKeys[e.code] = false;
         });
 
-        setInterval(_ => {
+        setInterval(() => {
             const pressingKeys = this.getPressingKeys();
 
             if (pressingKeys.length) {
                 pressingKeys.forEach(code => this.handleCommand(code));
             } else {
-                setTimeout(_ => this.player.stop(), 10);
+                setTimeout(() => this.player.stop(), 10);
             }
         }, 15);
     }
 
-    handleCommand(keyCode) {
+    handleCommand(keyCode: string) {
         const moveX = keyCode === 'ArrowLeft' ? -MOVE_PAD : (keyCode === 'ArrowRight' ? MOVE_PAD : null);
 
         if (moveX && this.player.canMove({ x: moveX })) {
@@ -113,7 +113,7 @@ export class Game {
     }
 
     updateGameSize() {
-        this.areaSize = { width: window.innerWidth, height: window.innerHeight };
+        this._areaSize = { width: window.innerWidth, height: window.innerHeight };
     }
 
     // @TODO: place in a global main loop ?
@@ -123,16 +123,11 @@ export class Game {
         }, 100);
     }
 
-    /** @param {GameObject} go */
-    outOfBounds(go) {
+    outOfBounds(go: GameObject) {
         return this.outOfBoundsData(go.coords, go.dimension);
     }
 
-    /**
-     * @param {Coords} coords 
-     * @param {Dimension} dimension 
-     */
-    outOfBoundsData(coords, dimension) {
+    outOfBoundsData(coords: Coords, dimension: Dimension) {
         return coords.x < 0 || coords.x + dimension.width > this.areaSize.width
             || coords.y < 0 || coords.y + dimension.height > this.areaSize.height;
     }
@@ -146,7 +141,7 @@ export class Game {
      * @param {Dimension} dimension
      * @returns boolean
      */
-    collidesData(uuid, coords, dimension) {
+    collidesData(uuid: string, coords: Coords, dimension: Dimension) {
         return this.gameObjects.some(go => {
             if (go.uuid != uuid && Util.checkCollision(coords, dimension, go.coords, go.dimension)) {
                 console.log('Collision found : ', coords, dimension, go, uuid);
@@ -161,12 +156,16 @@ export class Game {
         return Object.keys(this.pressingKeys).filter(x => this.pressingKeys[x]);
     }
 
-    isBoundKey(keyCode) {
+    isBoundKey(keyCode: string) {
         return BOUND_KEYS.includes(keyCode);
     }
 
     /** @return {Game} */
     static getInstance() {
-        return window.game;
+        return this._instance;
+    }
+
+    get areaSize() {
+        return this._areaSize;
     }
 }
