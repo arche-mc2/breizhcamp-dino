@@ -25,4 +25,19 @@ export class Util {
         return (start1 > start2 && start1 < end2)
             || (start2 > start1 && start2 < end1);
     }
+
+    static distanceOnAxis(axisType: number, coords1: Coords, dim1: Dimension, coords2: Coords, dim2: Dimension) {
+        return axisType === 0 ?
+            this.distanceBetweenAxis(coords1.x, dim1.width, coords2.x, dim2.width) :
+            this.distanceBetweenAxis(coords1.y, dim1.height, coords2.y, dim2.height);
+    }
+
+    static distanceBetweenAxis(pos: number, dim: number, pos2: number, dim2: number) {
+        return Math.abs(pos < pos2 ? pos2 - (pos + dim) : pos - (pos2 + dim2));
+    }
+
+    static distanceBetween(coords1: Coords, dimension1: Dimension, coords2: Coords, dimension2: Dimension) {
+        return Math.abs((coords1.x + dimension1.width) - (coords2.x + dimension2.width))
+            + Math.abs((coords1.y + dimension1.height) - (coords2.y + dimension2.height));
+    }
 }

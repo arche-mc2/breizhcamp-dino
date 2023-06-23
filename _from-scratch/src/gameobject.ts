@@ -1,4 +1,5 @@
-import { Game, MOVE_PAD } from "./game";
+import { Game } from "./game";
+import { Util } from "./util";
 
 export class Coords {
     x?: number;
@@ -30,48 +31,44 @@ export abstract class GameObject {
         };
     }
 
-    updateCoords() {
-        this.el.style.bottom = this.coords.y + 'px';
-        this.el.style.left = this.coords.x + 'px';
-    }
-
-    moveX(amount: number) {
-        this.coords.x += amount;
-        this.updateCoords();
+    moveX(amount: number, to = false) {
+        if (to) {
+            this.coords.x = amount;
+        } else {
+            this.coords.x += amount;
+        }
     }
 
     moveY(amount: number) {
         this.coords.y += amount;
-        this.updateCoords();
     }
 
+    // getMaxMoveX(move: number) {
+    //     return Math.min(
+    //         // compare to screen
+    //         Game.getInstance().distanceBeforeScreenLimit(this.coords.x, move, this.dimension),
+    //         Game.getInstance().distanceFromObstacle(this.uuid, this.coords.x, move, this.dimension)
+    //     );
+    // }
+
+    // getMaxMoveY(move: number) {
+
+    // }
+
     // @TODO: change this to get max move left before collision ? :)
-    canMove(coords: Coords) {
-        const potentialCoords = this.potentialCoords(coords);
+    canMove(move: Coords) {
+        const potentialCoords = this.potentialCoords(move);
 
         return !Game.getInstance().outOfBoundsData(potentialCoords, this.dimension)
             && !Game.getInstance().collidesData(this.uuid, potentialCoords, this.dimension);
     }
 
-    // @TODO: change this & jump to have a decreasing speed (effect of gravity = faster when fall, slower when jump)
-    fall() {
-        if (!this.shouldFall || this.falling) {
-            return;
-        }
-
-        this.falling = true;
-
-        const fallLoop = setInterval(_ => {
-            if (this.canMove({ y: -MOVE_PAD })) {
-                this.moveY(-MOVE_PAD);
-            } else {
-                this.falling = false;
-                clearInterval(fallLoop);
-            }
-        }, 15);
+    render() {
+        this.el.style.left = this.coords.x + 'px';
+        this.el.style.bottom = this.coords.y + 'px';
     }
 
-    abstract display(): void;
+    abstract init(): void;
 }
 
 class Item {

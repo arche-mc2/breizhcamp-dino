@@ -2,6 +2,7 @@ import { Coords, Dimension, GameObject } from './gameobject';
 import { Player } from './player';
 import { Util } from './util';
 import { Wall } from './wall';
+import { WallBuilder } from './wall-builder';
 
 const BOUND_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', 'Space'];
 
@@ -22,7 +23,7 @@ const AVAILABLE_BGS = [
 
 export class Game {
     private player: Player;
-    private pressingKeys: {[key: string]: boolean} = {};
+    private pressingKeys: { [key: string]: boolean } = {};
     private gameObjects: GameObject[] = [];
     private _areaSize: Dimension;
 
@@ -43,7 +44,9 @@ export class Game {
         this.player = new Player();
         this.addGameObject(this.player);
 
-        this.addWalls(3);
+        new WallBuilder().buildWalls(7).forEach(wall => this.addGameObject(wall));
+
+        // this.addWalls(3);
 
         this.initGravity();
         this.initListeners();
@@ -54,7 +57,7 @@ export class Game {
     // @TODO: make something smart, like we're always able to climb to the top :) (enoug platform and not too far away)
     // method like isReachable() ? based on a max jump / distance possible
     addWalls(count: number) {
-        Util.rangeArray(1, count).forEach(i => this.addGameObject(Wall.random((i + 1) * 30)));
+        // Util.rangeArray(1, count).forEach(i => this.addGameObject(Wall.random((i + 1) * 30)));
     }
 
     addGameObject(go: GameObject, autoDisplay = true) {
@@ -63,7 +66,7 @@ export class Game {
         }
 
         if (autoDisplay) {
-            go.display();
+            go.init();
         }
 
         this.gameObjects.push(go);
@@ -84,31 +87,27 @@ export class Game {
         });
 
         document.addEventListener('keyup', e => {
-            this.pressingKeys[e.code] = false;
-        });
-
-        setInterval(() => {
-            const pressingKeys = this.getPressingKeys();
-
-            if (pressingKeys.length) {
-                pressingKeys.forEach(code => this.handleCommand(code));
-            } else {
-                setTimeout(() => this.player.stop(), 10);
+            if (this.isBoundKey(e.code)) {
+                this.pressingKeys[e.code] = false;
             }
-        }, 15);
+        });
     }
 
     handleCommand(keyCode: string) {
         const moveX = keyCode === 'ArrowLeft' ? -MOVE_PAD : (keyCode === 'ArrowRight' ? MOVE_PAD : null);
 
-        if (moveX && this.player.canMove({ x: moveX })) {
+        if (moveX) {
+            this.player.updateLookDirection(moveX < 0);
+        }
+
+        if (moveX && this.player.canMove({x: moveX})) {
             this.player.moveX(moveX);
         } else if (keyCode === 'ArrowDown' && this.player.canMove({ y: -MOVE_PAD })) {
             this.player.moveY(-MOVE_PAD);
         }
 
-        if (keyCode === 'Space') {
-            this.player.jump();
+        if (keyCode === 'Space' && this.player.canJump()) {
+            this.player.initJump();
         }
     }
 
@@ -116,16 +115,64 @@ export class Game {
         this._areaSize = { width: window.innerWidth, height: window.innerHeight };
     }
 
+    update() {
+        const pressingKeys = this.getPressingKeys();
+
+        if (pressingKeys.length) {
+            pressingKeys.forEach(code => this.handleCommand(code));
+        } else {
+            // not the best place ?
+            this.player.stop();
+        }
+
+        if (this.player.jumpSpeed > 0) {
+            this.player.updateJump();
+        }
+
+        this.gameObjects.forEach(go => {
+            if (go instanceof Player && go.jumpSpeed > 0) {
+                // don't fall while jumping
+                return;
+            }
+
+            if (go.shouldFall && go.canMove({ y: -MOVE_PAD })) {
+                go.moveY(-MOVE_PAD);
+            }
+        });
+    }
+
+    render() {
+        this.gameObjects.forEach(go => go.render());
+    }
+
     // @TODO: place in a global main loop ?
     initGravity() {
-        setInterval(() => {
-            this.gameObjects.filter(go => go.shouldFall && !go.falling).forEach(go => go.fall());
-        }, 100);
+        // setInterval(() => {
+        //     this.gameObjects.filter(go => go.shouldFall && !go.falling).forEach(go => go.fall());
+        // }, 100);
     }
 
     outOfBounds(go: GameObject) {
         return this.outOfBoundsData(go.coords, go.dimension);
     }
+
+    // distanceBeforeScreenLimit(pos: number, move: number, dimension: Dimension) {
+    //     pos = (move < 0 ? pos : pos + dimension.width);
+
+    //     return (move < 0 ? Math.max(0, pos + move) : Math.min(pos + move, this.areaSize.width)) - pos;
+    // }
+
+    // distanceFromObstacle(uuid: string, pos: number, move: number, dimension: Dimension) {
+    //     // pos = (move < 0 ? pos : pos + dimension.width);
+
+    //     const distance = Math.min(...this.gameObjects.filter(go => go.uuid != uuid).map(go => {
+    //         return Util.distanceBetweenAxis(pos, dimension.width, go.coords.x, go.dimension.width)
+    //     }));
+
+    //     console.log('Distance = ', distance);
+
+    //     return distance;
+    // }
 
     outOfBoundsData(coords: Coords, dimension: Dimension) {
         return coords.x < 0 || coords.x + dimension.width > this.areaSize.width
