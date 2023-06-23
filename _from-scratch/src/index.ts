@@ -4,11 +4,16 @@ const game = Game.new().start();
 
 (window as any).game = game;
 
-function bonsoir() {
+let lastRefresh = 0;
+
+function refresh(now: any) {
+    const delta = now - lastRefresh;
+    lastRefresh = now;
+
     game.update();
-    game.render();
+    game.render(delta);
     
-    requestAnimationFrame(bonsoir);
+    requestAnimationFrame(refresh);
 }
 
-requestAnimationFrame(bonsoir);
+requestAnimationFrame(refresh);

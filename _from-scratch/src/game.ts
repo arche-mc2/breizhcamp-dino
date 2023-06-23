@@ -1,4 +1,5 @@
 import { Coords, Dimension, GameObject } from './gameobject';
+import { Item } from './item';
 import { Player } from './player';
 import { Util } from './util';
 import { Wall } from './wall';
@@ -46,7 +47,9 @@ export class Game {
 
         new WallBuilder().buildWalls(7).forEach(wall => this.addGameObject(wall));
 
-        // this.addWalls(3);
+        const archeLogo = new Item();
+        archeLogo.imgPath = 'images/arche-logo.png';
+        this.addGameObject(archeLogo);
 
         this.initGravity();
         this.initListeners();
@@ -141,8 +144,8 @@ export class Game {
         });
     }
 
-    render() {
-        this.gameObjects.forEach(go => go.render());
+    render(delta?: number) {
+        this.gameObjects.forEach(go => go.render(delta));
     }
 
     // @TODO: place in a global main loop ?
@@ -155,24 +158,6 @@ export class Game {
     outOfBounds(go: GameObject) {
         return this.outOfBoundsData(go.coords, go.dimension);
     }
-
-    // distanceBeforeScreenLimit(pos: number, move: number, dimension: Dimension) {
-    //     pos = (move < 0 ? pos : pos + dimension.width);
-
-    //     return (move < 0 ? Math.max(0, pos + move) : Math.min(pos + move, this.areaSize.width)) - pos;
-    // }
-
-    // distanceFromObstacle(uuid: string, pos: number, move: number, dimension: Dimension) {
-    //     // pos = (move < 0 ? pos : pos + dimension.width);
-
-    //     const distance = Math.min(...this.gameObjects.filter(go => go.uuid != uuid).map(go => {
-    //         return Util.distanceBetweenAxis(pos, dimension.width, go.coords.x, go.dimension.width)
-    //     }));
-
-    //     console.log('Distance = ', distance);
-
-    //     return distance;
-    // }
 
     outOfBoundsData(coords: Coords, dimension: Dimension) {
         return coords.x < 0 || coords.x + dimension.width > this.areaSize.width
@@ -189,14 +174,7 @@ export class Game {
      * @returns boolean
      */
     collidesData(uuid: string, coords: Coords, dimension: Dimension) {
-        return this.gameObjects.some(go => {
-            if (go.uuid != uuid && Util.checkCollision(coords, dimension, go.coords, go.dimension)) {
-                console.log('Collision found : ', coords, dimension, go, uuid);
-                return true;
-            }
-
-            return false;
-        });
+        return this.gameObjects.some(go => go.uuid != uuid && Util.checkCollision(coords, dimension, go.coords, go.dimension));
     }
 
     getPressingKeys() {

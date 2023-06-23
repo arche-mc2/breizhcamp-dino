@@ -33,6 +33,7 @@ body {
 
 .wall {
     position: absolute;
+    white-space: nowrap;
 }
 
 .wall>div {
@@ -43,4 +44,14 @@ body {
 
 .wall>div:hover {
     border: 1px solid black;
+}
+
+.item {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+}
+
+.item img {
+    width: 100%;
 }

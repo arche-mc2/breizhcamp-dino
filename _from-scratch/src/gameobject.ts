@@ -63,7 +63,7 @@ export abstract class GameObject {
             && !Game.getInstance().collidesData(this.uuid, potentialCoords, this.dimension);
     }
 
-    render() {
+    render(delta?: number) {
         this.el.style.left = this.coords.x + 'px';
         this.el.style.bottom = this.coords.y + 'px';
     }

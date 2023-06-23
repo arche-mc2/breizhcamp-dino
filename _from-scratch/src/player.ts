@@ -1,3 +1,4 @@
+import { Anim } from './anim';
 import { MOVE_PAD } from './game';
 import { GameObject } from './gameobject';
 
@@ -7,9 +8,12 @@ const FPS = 15;
 const MAX_JUMP_HEIGHT = 300;
 
 export class Player extends GameObject {
-    currentAnim: number = 0;
+    currentAnim: number
+    
     /** @type {number} */
     spriteNumber = 0;
+
+    deltaSinceLastAnimRefresh = 0;
 
     dimension = { width: SPRITE_WIDTH, height: SPRITE_HEIGHT };
 
@@ -85,9 +89,6 @@ export class Player extends GameObject {
 
     canJump() {
         // not jumping already, and we're on the floor
-        console.log('Jumpspeed = ', this.jumpSpeed);
-        console.log('Can move = ', this.canMove({y: -MOVE_PAD}));
-        
         return (!this.jumpSpeed || this.jumpSpeed <= 0) && !this.canMove({y: -MOVE_PAD});
     }
 
@@ -110,34 +111,15 @@ export class Player extends GameObject {
         this.jumpSpeed = 30;
     }
 
-    // @TODO: ca va pas, il faut interdire de sauter tant qu'on saute ET tant qu'on tombe, ce qui doit arriver tout de suite après
-    // or pour l'instant on a la latence de la boucle principale qui permet un mini double saut ... (bref c'est moche et y'a trop d'attributs)
-    // @TODO: maybe add a "onTheFloor" boolean to make sure we can jump ?
-    // jump() {
-    //     console.log('CanJump ? Falling ? Coords !', this.canJump, this.falling, this.coords);
+    refreshSprite(delta?: number) {
+        this.deltaSinceLastAnimRefresh += delta;
 
-    //     if (!this.canJump || this.falling) {
-    //         return;
-    //     }
+        if (this.deltaSinceLastAnimRefresh < 500 / CharAnim.MAX[this.currentAnim]) {
+            return;
+        }
 
-    //     this.canJump = false;
+        this.deltaSinceLastAnimRefresh = 0;
 
-    //     let jumpSpeed = 30;
-
-    //     // go high for a certain amount of time .. @TODO: replace with amount of space
-    //     const jumpLoop = setInterval(_ => {
-    //         if (this.canMove({ y: --jumpSpeed })) {
-    //             this.moveY(jumpSpeed);
-    //         }
-    //     }, 30);
-
-    //     setTimeout(() => {
-    //         this.canJump = true;
-    //         clearInterval(jumpLoop);
-    //     }, 300);
-    // }
-
-    refreshSprite() {
         if (this.spriteNumber > CharAnim.MAX[this.currentAnim] - 1) {
             this.spriteNumber = 0;
         }
@@ -146,11 +128,11 @@ export class Player extends GameObject {
         this.el.style.backgroundPositionY = -(this.currentAnim * SPRITE_HEIGHT) + 'px';
     }
 
-    render() {
+    render(delta?: number) {
         super.render();
 
         // huhuuuuuuuu
-        // this.refreshSprite();
+        this.refreshSprite(delta);
     }
 }
 

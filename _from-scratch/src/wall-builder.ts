@@ -13,18 +13,10 @@ export class WallBuilder {
         return walls;
     }
 
-    nextWall(wall: Wall): Wall {
-        return this.generate();
-        let newWall = this.generate();
-
-        // @TODO: distanceBetween must be more than x and  less than y
-        while (true) {
-            const distance = Util.distanceBetween(wall.coords, wall.dimension, newWall.coords, newWall.dimension);
-
-            if (distance > 30 && distance < 100) {
-                return newWall;
-            }
-        }
+    nextWall(fromWall: Wall): Wall {
+        const newWall = this.generate();
+        console.log('Next wall : ', newWall);
+        return newWall;
     }
 
 
