@@ -1,3 +1,8 @@
+@font-face {
+    font-family: "Super Mario Bros 2";
+    src: url('fonts/SuperMarioBros2.ttf') format("truetype");
+}
+
 body {
     overflow: hidden;
     background-size: cover;
@@ -5,12 +10,61 @@ body {
 }
 
 .overlay {
-    background: rgba(255, 255, 255, .5);
+    background: rgba(255, 255, 255, .1);
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+}
+
+.game {
+    /* position: absolute;
+    z-index: 999; */
+    font-family: 'Super Mario Bros 2';
+    color: white;
+}
+
+.top-bar .ui {
+    position: absolute;
+    z-index: 999;
+    top: 3vh;
+}
+
+#score-block {
+    left: 3vw;
+    display: flex;
+    flex-direction: column;
+    place-items: center;
+}
+
+#time-left {
+    width: 100%;
+    text-align: center;
+}
+
+#menu-dialog {
+    display: none;
+    position: absolute;
+    z-index: 999;
+    width: 20vw;
+    left: calc(50vw - 20vw / 2);
+    top: 25vh;
+    background: rgba(0, 0, 0, .75);
+    text-align: center;
+    padding: 10px 30px;
+}
+
+#menu-dialog h1 {
+    height: 120px;
+    display: flex;
+    place-items: center;
+    place-content: center;
+    font-size: initial;
+}
+
+#menu-dialog h1 img {
+    height: 100%;
 }
 
 .player {
@@ -24,7 +78,8 @@ body {
 
     /* transition: all ease-out .2s; */
 
-    border: 1px solid red; /* debug lol */
+    border: 1px solid red;
+    /* debug lol */
 }
 
 .player.backward {
@@ -54,4 +109,21 @@ body {
 
 .item img {
     width: 100%;
+}
+
+.code-coin {
+    width: 30px;
+    height: 30px;
+
+    animation: 1s infinite alternate flip;
+}
+
+@keyframes flip {
+    from {
+        transform: rotateY(180deg);
+    }
+
+    to {
+        transform: rotateY(0);
+    }
 }

@@ -1,9 +1,10 @@
 import { Coords, Dimension, GameObject } from './gameobject';
-import { Item } from './item';
+import { SpriteItem } from './item';
 import { Player } from './player';
 import { Util } from './util';
-import { Wall } from './wall';
-import { WallBuilder } from './wall-builder';
+import { TerrainBuilder } from './terrain-builder';
+import { Ui } from './ui';
+import { tap, filter, takeWhile, timer } from 'rxjs';
 
 const BOUND_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', 'Space'];
 
@@ -26,9 +27,19 @@ export class Game {
     private player: Player;
     private pressingKeys: { [key: string]: boolean } = {};
     private gameObjects: GameObject[] = [];
+
     private _areaSize: Dimension;
+    private _currentScore: number;
 
     private static _instance: Game;
+
+    private timeLeft = 300;
+    private timeOver = false;
+    private paused = false;
+
+    private ui: Ui;
+
+    private terrainBuilder = new TerrainBuilder();
 
     constructor() {
     }
@@ -45,14 +56,15 @@ export class Game {
         this.player = new Player();
         this.addGameObject(this.player);
 
-        new WallBuilder().buildWalls(7).forEach(wall => this.addGameObject(wall));
+        this.terrainBuilder.buildWalls(7).forEach(wall => this.addGameObject(wall));
 
-        const archeLogo = new Item();
-        archeLogo.imgPath = 'images/arche-logo.png';
-        this.addGameObject(archeLogo);
+        this.terrainBuilder.spanwGoal();
+        this.terrainBuilder.spawnCoins();
 
-        this.initGravity();
         this.initListeners();
+        this.initUi();
+
+        this.initTimer();
 
         return this;
     }
@@ -84,6 +96,12 @@ export class Game {
         window.addEventListener('resize', e => this.updateGameSize());
 
         document.addEventListener('keydown', e => {
+            if (e.code === 'Escape') {
+                this.handlePause();
+                e.stopPropagation();
+                return;
+            }
+
             if (this.isBoundKey(e.code)) {
                 this.pressingKeys[e.code] = true;
             }
@@ -96,6 +114,47 @@ export class Game {
         });
     }
 
+    initUi() {
+        this.ui = new Ui();
+
+        this.updateScore(1000);
+    }
+
+    updateScore(score: number) {
+        this.ui.refreshScore(score);
+    }
+
+    initTimer() {
+        this.ui.refreshTime(this.timeLeft);
+
+        // launch timer
+        timer(1000, 1000).pipe(
+            filter(() => !this.paused),
+            tap(() => this.updateTime()),
+            takeWhile(() => !this.timeOver)
+        ).subscribe();
+    }
+
+    updateTime() {
+        this.timeLeft--;
+        this.ui.refreshTime(this.timeLeft);
+
+        if (this.timeLeft <= 0) {
+            this.timeOver = true;
+            this.ui.openMenuDialog('Time oveeeeeeer :(');
+        }
+    }
+
+    handlePause() {
+        this.paused = !this.paused;
+
+        if (this.paused) {
+            this.ui.pause();
+        } else {
+            this.ui.unpause();
+        }
+    }
+
     handleCommand(keyCode: string) {
         const moveX = keyCode === 'ArrowLeft' ? -MOVE_PAD : (keyCode === 'ArrowRight' ? MOVE_PAD : null);
 
@@ -103,7 +162,7 @@ export class Game {
             this.player.updateLookDirection(moveX < 0);
         }
 
-        if (moveX && this.player.canMove({x: moveX})) {
+        if (moveX && this.player.canMove({ x: moveX })) {
             this.player.moveX(moveX);
         } else if (keyCode === 'ArrowDown' && this.player.canMove({ y: -MOVE_PAD })) {
             this.player.moveY(-MOVE_PAD);
@@ -119,6 +178,10 @@ export class Game {
     }
 
     update() {
+        if (this.paused || this.timeOver) {
+            return;
+        }
+
         const pressingKeys = this.getPressingKeys();
 
         if (pressingKeys.length) {
@@ -145,14 +208,11 @@ export class Game {
     }
 
     render(delta?: number) {
-        this.gameObjects.forEach(go => go.render(delta));
-    }
+        if (this.paused || this.timeOver) {
+            return;
+        }
 
-    // @TODO: place in a global main loop ?
-    initGravity() {
-        // setInterval(() => {
-        //     this.gameObjects.filter(go => go.shouldFall && !go.falling).forEach(go => go.fall());
-        // }, 100);
+        this.gameObjects.forEach(go => go.render(delta));
     }
 
     outOfBounds(go: GameObject) {
@@ -174,7 +234,7 @@ export class Game {
      * @returns boolean
      */
     collidesData(uuid: string, coords: Coords, dimension: Dimension) {
-        return this.gameObjects.some(go => go.uuid != uuid && Util.checkCollision(coords, dimension, go.coords, go.dimension));
+        return this.gameObjects.some(go => go.hasCollision && go.uuid != uuid && Util.checkCollision(coords, dimension, go.coords, go.dimension));
     }
 
     getPressingKeys() {
@@ -190,7 +250,15 @@ export class Game {
         return this._instance;
     }
 
+    getGameObjects() {
+        return this.gameObjects;
+    }
+
     get areaSize() {
         return this._areaSize;
+    }
+
+    get currentScore() {
+        return this._currentScore;
     }
 }

@@ -14,6 +14,9 @@ export class Dimension {
 export abstract class GameObject {
     protected el: HTMLElement;
 
+    name?: string;
+    className?: string;
+
     uuid: string;
     dimension: Dimension;
     coords: Coords = { x: 0, y: 0 };
@@ -23,6 +26,10 @@ export abstract class GameObject {
     falling = false;
     // must handle collision
     hasCollision = true;
+
+    constructor(name?: string) {
+        this.name = name;
+    }
 
     potentialCoords(coords: Coords) {
         return {
@@ -41,6 +48,11 @@ export abstract class GameObject {
 
     moveY(amount: number) {
         this.coords.y += amount;
+    }
+
+    addClassName(name: string) {
+        this.className = name;
+        return this;
     }
 
     // getMaxMoveX(move: number) {
@@ -68,9 +80,15 @@ export abstract class GameObject {
         this.el.style.bottom = this.coords.y + 'px';
     }
 
+    setDimension(dim: Dimension) {
+        this.dimension = dim;
+        return this;
+    }
+    
+    setCoords(coords: Coords) {
+        this.coords = coords;
+        return this;
+    }
+
     abstract init(): void;
-}
-
-class Item {
-
 }
