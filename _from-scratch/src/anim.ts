@@ -3,10 +3,12 @@ import { BehaviorSubject, of } from "rxjs";
 export class Anim {
     name: string;
     length: number;
+    loopFrom: number;
 
-    constructor(name: string, length: number) {
+    constructor(name: string, length: number, loopFrom?: number) {
         this.name = name;
         this.length = length;
+        this.loopFrom = loopFrom;
     }
 
     // spriteOffsets: number[];
@@ -14,7 +16,7 @@ export class Anim {
 
 export enum CharAnim {
     IDLE = 0,
-    FALL = 1,
+    CROUCH = 1,
     WALK = 2,
     JUMP = 3
 };
@@ -27,12 +29,11 @@ export class AnimRunner {
     anims: { [key in CharAnim]: Anim } = {
         [CharAnim.IDLE]: new Anim('idle', 4),
         [CharAnim.WALK]: new Anim('walk', 9),
-        [CharAnim.FALL]: null,
-        [CharAnim.JUMP]: null
+        [CharAnim.CROUCH]: new Anim('crouch', 6, 4),
+        [CharAnim.JUMP]: new Anim('jump', 13)
     };
 
     run(anim: Anim) {
-        CharAnim.IDLE
         if (this.running === anim) {
             return;
         }
@@ -62,7 +63,7 @@ export class AnimRunner {
         this.deltaSinceLastAnimRefresh = 0;
 
         if (this.currentIndex > this.running.length) {
-            this.currentIndex = 1;
+            this.currentIndex = this.running.loopFrom || 1;
         }
 
         return this.currentIndex;

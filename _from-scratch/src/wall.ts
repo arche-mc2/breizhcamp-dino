@@ -19,6 +19,7 @@ export class Wall extends GameObject {
         // une chance sur deux ! (couleurs aléatoires, sinon texture)
         this.blockStyle = Math.random() > 0.5 ? Util.rand(1, BLOCK_BG_MAX) : 0;
 
+        let lastColorIndex = null;
         for (let i = 0; i < this.blockCount; i++) {
             let block;
 
@@ -27,7 +28,8 @@ export class Wall extends GameObject {
                 block.src = `images/block-texture/${this.blockStyle}.avif`;
             } else {
                 block = document.createElement('div');
-                block.style.backgroundColor = BLOCK_COLORS[Util.rand(1, BLOCK_COLORS.length) - 1];
+                lastColorIndex = this.generateBlockColor(lastColorIndex);
+                block.style.backgroundColor = BLOCK_COLORS[lastColorIndex];
             }
 
             block.style.width = this.blockSize + 'px';
@@ -43,6 +45,16 @@ export class Wall extends GameObject {
         setTimeout(() => this.dimension = { width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height });
 
         return el;
+    }
+
+    generateBlockColor(exclude: number) {
+        while (true) {
+            const rand = Util.rand(1, BLOCK_COLORS.length) - 1;
+
+            if (rand !== exclude) {
+                return rand;
+            }
+        }
     }
 
     render() {

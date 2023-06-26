@@ -5,10 +5,13 @@ import { Util } from './util';
 import { TerrainBuilder } from './terrain-builder';
 import { Ui } from './ui';
 import { tap, filter, takeWhile, timer } from 'rxjs';
+import { SoundManager } from './sound-manager';
+import { Wall } from './wall';
 
 const BOUND_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', 'Space'];
 
 export const MOVE_PAD = 5; // distance in pixel of a single move
+export const FALL_PAD = 10;
 
 const AVAILABLE_BGS = [
     'gta.jpg',
@@ -29,7 +32,7 @@ export class Game {
     private gameObjects: GameObject[] = [];
 
     private _areaSize: Dimension;
-    private _currentScore: number;
+    private currentScore: number;
 
     private static _instance: Game;
 
@@ -40,6 +43,7 @@ export class Game {
     private ui: Ui;
 
     private terrainBuilder = new TerrainBuilder();
+    private soundManager = new SoundManager();
 
     constructor() {
     }
@@ -87,6 +91,11 @@ export class Game {
         this.gameObjects.push(go);
     }
 
+    removeGameObject(obj: GameObject) {
+        this.gameObjects.splice(this.gameObjects.indexOf(obj), 1);
+        obj.delete();
+    }
+
     loadBackground() {
         const randomBackIndex = Math.floor(Math.random() * AVAILABLE_BGS.length - 1) + 1;
         document.body.style.backgroundImage = 'url(images/bg/' + AVAILABLE_BGS[randomBackIndex] + ')'
@@ -102,6 +111,11 @@ export class Game {
                 return;
             }
 
+            if (e.key === 'w') {
+                const newWall = this.terrainBuilder.nextWall(this.gameObjects.find(go => go instanceof Wall) as Wall);
+                this.addGameObject(newWall);
+            }
+
             if (this.isBoundKey(e.code)) {
                 this.pressingKeys[e.code] = true;
             }
@@ -111,16 +125,21 @@ export class Game {
             if (this.isBoundKey(e.code)) {
                 this.pressingKeys[e.code] = false;
             }
+
+            if (e.code === 'ArrowDown') {
+                this.player.uncrouch();
+            }
         });
     }
 
     initUi() {
         this.ui = new Ui();
 
-        this.updateScore(1000);
+        this.updateScore(0);
     }
 
     updateScore(score: number) {
+        this.currentScore = score;
         this.ui.refreshScore(score);
     }
 
@@ -164,8 +183,12 @@ export class Game {
 
         if (moveX && this.player.canMove({ x: moveX })) {
             this.player.moveX(moveX);
-        } else if (keyCode === 'ArrowDown' && this.player.canMove({ y: -MOVE_PAD })) {
-            this.player.moveY(-MOVE_PAD);
+        } else if (keyCode === 'ArrowDown') {
+            this.player.crouch();
+
+            if (this.player.canMove({ y: -MOVE_PAD })) {
+                this.player.moveY(-MOVE_PAD);
+            }
         }
 
         if (keyCode === 'Space' && this.player.canJump()) {
@@ -188,7 +211,7 @@ export class Game {
             pressingKeys.forEach(code => this.handleCommand(code));
         } else {
             // not the best place ?
-            this.player.stop();
+            this.player.idle();
         }
 
         if (this.player.jumpSpeed > 0) {
@@ -201,10 +224,22 @@ export class Game {
                 return;
             }
 
-            if (go.shouldFall && go.canMove({ y: -MOVE_PAD })) {
-                go.moveY(-MOVE_PAD);
+            if (go.shouldFall && go.canMove({ y: -FALL_PAD })) {
+                go.moveY(-FALL_PAD);
             }
         });
+
+        const touchCoin = this.hitsAny(this.player, this.gameObjects.filter(go => go instanceof CodeCoin));
+
+        if (touchCoin) {
+            this.onCollectCoin(touchCoin as CodeCoin);
+        }
+    }
+
+    onCollectCoin(coin: CodeCoin) {
+        this.soundManager.playCoin();
+        this.updateScore(this.currentScore + 1000);
+        this.removeGameObject(coin);
     }
 
     render(delta?: number) {
@@ -224,13 +259,28 @@ export class Game {
             || coords.y < 0 || coords.y + dimension.height > this.areaSize.height;
     }
 
+    collides() {
+        return false;
+    }
+
     /**
      * @param {Coords} coords
      * @param {Dimension} dimension
      * @returns boolean
      */
     collidesData(uuid: string, coords: Coords, dimension: Dimension) {
-        return this.gameObjects.some(go => go.hasCollision && go.uuid != uuid && Util.checkCollision(coords, dimension, go.coords, go.dimension));
+        return this.gameObjects.some(go => go.uuid != uuid && Util.checkCollision(coords, dimension, go.coords, go.dimension));
+    }
+
+    hitsCollision(uuid: string, coords: Coords, dimension: Dimension) {
+        return this.gameObjects.some(go =>
+            go.uuid != uuid && go.hasCollision
+            && Util.checkCollision(coords, dimension, go.coords, go.dimension)
+        );
+    }
+
+    hitsAny(obj: GameObject, others: GameObject[]) {
+        return others.find(go => go.uuid != obj.uuid && Util.checkCollision(obj.coords, obj.dimension, go.coords, go.dimension));
     }
 
     getPressingKeys() {
@@ -252,9 +302,5 @@ export class Game {
 
     get areaSize() {
         return this._areaSize;
-    }
-
-    get currentScore() {
-        return this._currentScore;
     }
 }

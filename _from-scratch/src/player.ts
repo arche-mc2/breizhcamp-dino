@@ -1,6 +1,5 @@
-import { distinct, distinctUntilChanged } from 'rxjs';
 import { Anim, AnimRunner, CharAnim } from './anim';
-import { MOVE_PAD } from './game';
+import { FALL_PAD } from './game';
 import { GameObject } from './gameobject';
 
 const SPRITE_WIDTH = 80;
@@ -13,8 +12,6 @@ export class Player extends GameObject {
 
     deltaSinceLastAnimRefresh = 0;
 
-    dimension = { width: SPRITE_WIDTH, height: SPRITE_HEIGHT };
-
     animRunner = new AnimRunner();
 
     lookLeft = false; // replace with look direction ;o
@@ -24,8 +21,12 @@ export class Player extends GameObject {
     jumpHeight: number;
     jumpSpeed: number;
 
+    crouched = false;
+
     constructor() {
         super();
+
+        this.resetDimension();
 
         // subject to gravity
         this.shouldFall = true;
@@ -51,6 +52,10 @@ export class Player extends GameObject {
         return el;
     }
 
+    resetDimension() {        
+        this.dimension = { width: SPRITE_WIDTH, height: SPRITE_HEIGHT };
+    }
+
     idle() {
         this.playAnim(CharAnim.IDLE);
     }
@@ -64,7 +69,9 @@ export class Player extends GameObject {
     }
 
     moveX(amount: number, to = false) {
-        this.playAnim(CharAnim.WALK);
+        if (!this.crouched) {
+            this.playAnim(CharAnim.WALK);
+        }
 
         super.moveX(amount, to);
     }
@@ -75,10 +82,6 @@ export class Player extends GameObject {
         super.moveY(amount);
     }
 
-    stop() {
-        this.playAnim(CharAnim.IDLE);
-    }
-
     updateLookDirection(lookLeft: boolean) {
         this.lookLeft = lookLeft;
 
@@ -87,7 +90,7 @@ export class Player extends GameObject {
 
     canJump() {
         // not jumping already, and we're on the floor
-        return (!this.jumpSpeed || this.jumpSpeed <= 0) && !this.canMove({ y: -MOVE_PAD });
+        return (!this.jumpSpeed || this.jumpSpeed <= 0) && !this.canMove({ y: -FALL_PAD });
     }
 
     updateJump() {
@@ -109,6 +112,22 @@ export class Player extends GameObject {
         this.jumpSpeed = 30;
 
         // this.playAnim(CharAnim.JUMP);
+    }
+
+    crouch() {
+        if (!this.crouched) {
+            this.crouched = true;
+            this.dimension = { width: 85, height: 60 };
+            this.playAnim(CharAnim.CROUCH);
+            this.el.classList.add('crouch');
+        }
+    }
+
+    uncrouch() {
+        this.crouched = false;
+        this.resetDimension();
+        this.idle();
+        this.el.classList.remove('crouch');
     }
 
     refreshSprite(delta?: number) {

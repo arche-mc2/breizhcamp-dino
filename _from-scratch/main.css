@@ -82,6 +82,17 @@ body {
     /* debug lol */
 }
 
+.player.crouch {
+    width: 85px;
+    height: 60px;
+    overflow: visible;
+}
+
+.player.crouch img {
+    width: auto;
+    height: auto;
+}
+
 .player img {
     width: 100%;
     height: 100%;

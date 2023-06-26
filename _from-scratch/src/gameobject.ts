@@ -28,8 +28,6 @@ export abstract class GameObject {
     // must handle collision
     hasCollision = true;
 
-    onHit$ = new Subject();
-
     constructor(name?: string) {
         this.name = name;
     }
@@ -75,7 +73,7 @@ export abstract class GameObject {
         const potentialCoords = this.potentialCoords(move);
 
         return !Game.getInstance().outOfBoundsData(potentialCoords, this.dimension)
-            && !Game.getInstance().collidesData(this.uuid, potentialCoords, this.dimension);
+            && !Game.getInstance().hitsCollision(this.uuid, potentialCoords, this.dimension);
     }
 
     render(delta?: number) {
@@ -93,9 +91,9 @@ export abstract class GameObject {
         return this;
     }
 
-    onHit() {
-        return this.onHit$;
-    }
-
     abstract init(): void;
+
+    delete() {
+        document.body.removeChild(this.el);
+    }
 }
