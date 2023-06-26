@@ -19,8 +19,8 @@ export class Wall extends GameObject {
     }
 
     init() {
-        const el = document.createElement('div');
-        el.classList.add('wall');
+        this.el = document.createElement('div');
+        this.el.classList.add('wall');
 
         // une chance sur deux ! (couleurs aléatoires, sinon texture)
         this.blockStyle = Math.random() > 0.5 ? Util.rand(1, BLOCK_BG_MAX) : 0;
@@ -39,16 +39,14 @@ export class Wall extends GameObject {
             }
 
             block.style.width = this.blockSize + 'px';
-            el.appendChild(block);
+            this.el.appendChild(block);
         }
 
-        el.style.height = this.blockSize + 'px';
-        el.style.bottom = this.coords.y + 'px';
-        el.style.left = this.coords.x + 'px';
+        this.el.style.height = this.blockSize + 'px';
+        this.el.style.bottom = this.coords.y + 'px';
+        this.el.style.left = this.coords.x + 'px';
 
-        document.body.appendChild(el);
-
-        return el;
+        document.body.appendChild(this.el);
     }
 
     computeDimension() {

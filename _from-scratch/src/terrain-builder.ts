@@ -1,6 +1,5 @@
 import { Game } from "./game";
-import { Coords, Dimension } from "./gameobject";
-import { ArcheGoal, CodeCoin, SpriteItem } from "./item";
+import { ArcheGoal, CodeCoin } from "./item";
 import { Util } from "./util";
 import { Wall } from "./wall";
 
@@ -19,6 +18,8 @@ export class TerrainBuilder {
         return walls;
     }
 
+    // @TODO: make something smart, like we're always able to climb to the top :) (enough platform and not too far away)
+    // method like isReachable() ? based on a max jump / distance possible
     nextWall(fromWall: Wall): Wall {
         const newWall = this.generate();
         console.log('Next wall : ', newWall);
@@ -57,19 +58,15 @@ export class TerrainBuilder {
 
     spanwGoal() {
         const game = Game.getInstance();
-        
-        console.log('Area size : ', game.areaSize);
 
-        setTimeout(() => {
-            const archeLogo = new ArcheGoal()
-                .setDimension({ width: 200, height: 200 })
-                .setCoords({ x: game.areaSize.width - 220, y: game.areaSize.height - 220 });
+        const archeLogo = new ArcheGoal()
+            .setDimension({ width: 200, height: 120 })
+            .setCoords({ x: game.areaSize.width - 220, y: game.areaSize.height - 160 });
 
-            Game.getInstance().addGameObject(archeLogo);
-        }, 100);
+        Game.getInstance().addGameObject(archeLogo);
     }
 
     getGroundAndWalls() {
-        return Game.getInstance().getGameObjects().filter(go => go instanceof Wall);
+        return Game.getInstance().currentLvl.groundAndWalls;
     }
 }

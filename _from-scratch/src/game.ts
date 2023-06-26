@@ -1,5 +1,5 @@
 import { Coords, Dimension, GameObject } from './gameobject';
-import { CodeCoin, SpriteItem } from './item';
+import { CodeCoin } from './item';
 import { Player } from './player';
 import { Util } from './util';
 import { TerrainBuilder } from './terrain-builder';
@@ -7,36 +7,29 @@ import { Ui } from './ui';
 import { tap, filter, takeWhile, timer } from 'rxjs';
 import { SoundManager } from './sound-manager';
 import { Wall } from './wall';
+import { Level } from './level';
 
 const BOUND_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', 'Space'];
 
 export const MOVE_PAD = 5; // distance in pixel of a single move
 export const FALL_PAD = 5;
 
-const AVAILABLE_BGS = [
-    'gta.jpg',
-    'pokemon.webp',
-    'pokemon-2.jfif',
-    'dinan.png',
-    'st-malo.jpg_large',
-    'new-york.jpg',
-    'tokyo.jpg',
-    'jurassic-park-1.jpg',
-    'jurassic-park-2.jpg',
-    'jurassic-park-3.jpg'
-];
+const INITIAL_TIMER = 20;
 
 export class Game {
     private player: Player;
+    private level: Level;
+
     private pressingKeys: { [key: string]: boolean } = {};
-    private gameObjects: GameObject[] = [];
+    // private gameObjects: GameObject[] = [];
 
     private _areaSize: Dimension;
     private currentScore: number;
+    private currentLevelNumber = 1;
 
     private static _instance: Game;
 
-    private timeLeft = 300;
+    private timeLeft = INITIAL_TIMER;
     private timeOver = false;
     private paused = false;
 
@@ -54,58 +47,24 @@ export class Game {
     }
 
     start() {
-        this.loadBackground();
-        this.updateGameSize();
-
-        this.player = new Player();
-        this.addGameObject(this.player);
-
-        this.terrainBuilder.buildWalls(7).forEach(wall => this.addGameObject(wall));
-
-        this.terrainBuilder.spanwGoal();
-        this.terrainBuilder.spawnCoins();
-
-        this.initListeners();
+        this.computeAreaSize();
         this.initUi();
 
+        this.player = new Player();
+
+        this.nextLevel();
+
+        this.initListeners();
         this.initTimer();
 
         return this;
     }
 
-    // @TODO: make something smart, like we're always able to climb to the top :) (enoug platform and not too far away)
-    // method like isReachable() ? based on a max jump / distance possible
-    addWalls(count: number) {
-        // Util.rangeArray(1, count).forEach(i => this.addGameObject(Wall.random((i + 1) * 30)));
-    }
-
-    addGameObject(go: GameObject, autoDisplay = true) {
-        if (!go.uuid) {
-            go.uuid = Util.uuid();
-        }
-
-        if (autoDisplay) {
-            go.init();
-        }
-
-        this.gameObjects.push(go);
-    }
-
-    removeGameObject(obj: GameObject) {
-        this.gameObjects.splice(this.gameObjects.indexOf(obj), 1);
-        obj.delete();
-    }
-
-    loadBackground() {
-        const randomBackIndex = Math.floor(Math.random() * AVAILABLE_BGS.length - 1) + 1;
-        document.body.style.backgroundImage = 'url(images/bg/' + AVAILABLE_BGS[randomBackIndex] + ')'
-    }
-
     initListeners() {
-        window.addEventListener('resize', e => this.updateGameSize());
+        window.addEventListener('resize', e => this.computeAreaSize());
 
         document.addEventListener('keydown', e => {
-            if (e.code === 'Escape') {
+            if (e.code === 'Escape' && !this.timeOver) {
                 this.handlePause();
                 e.stopPropagation();
                 return;
@@ -122,7 +81,7 @@ export class Game {
                 }
                 newWall.coords = adjustCoords;
 
-                this.addGameObject(newWall);
+                this.level.addGameObject(newWall);
             }
 
             if (this.isBoundKey(e.code)) {
@@ -200,12 +159,39 @@ export class Game {
             }
         }
 
+        if (keyCode === 'ArrowUp' && this.hitsAny(this.player, [this.level.archeGoal])) {
+            this.onReachGoal();
+        }
+
         if (keyCode === 'Space' && this.player.canJump()) {
             this.player.initJump();
         }
     }
 
-    updateGameSize() {
+    onReachGoal() {
+        this.nextLevel();
+    }
+
+    nextLevel() {
+        if (this.level) {
+            this.level.delete();
+            this.currentLevelNumber++;
+        }
+
+        this.ui.refreshLevel(this.currentLevelNumber);
+        this.level = new Level();
+        this.level.generate();
+        this.level.addGameObject(this.player);
+
+        this.resetLevel();
+    }
+
+    resetLevel() {
+        this.timeLeft = INITIAL_TIMER;
+        this.player.coords = { x: 0, y: 0 };
+    }
+
+    computeAreaSize() {
         this._areaSize = { width: window.innerWidth, height: window.innerHeight };
     }
 
@@ -225,20 +211,11 @@ export class Game {
 
         if (this.player.jumpSpeed > 0) {
             this.player.updateJump();
+        } else if (this.player.canMove({ y: -FALL_PAD })) {
+            this.player.moveY(-FALL_PAD);
         }
 
-        this.gameObjects.forEach(go => {
-            if (go instanceof Player && go.jumpSpeed > 0) {
-                // don't fall while jumping
-                return;
-            }
-
-            if (go.hasGravity && go.canMove({ y: -FALL_PAD })) {
-                go.moveY(-FALL_PAD);
-            }
-        });
-
-        const touchCoin = this.hitsAny(this.player, this.gameObjects.filter(go => go instanceof CodeCoin));
+        const touchCoin = this.hitsAny(this.player, this.level.codeCoins);
 
         if (touchCoin) {
             this.onCollectCoin(touchCoin as CodeCoin);
@@ -248,7 +225,7 @@ export class Game {
     onCollectCoin(coin: CodeCoin) {
         this.soundManager.playCoin();
         this.updateScore(this.currentScore + 1000);
-        this.removeGameObject(coin);
+        this.level.removeGameObject(coin);
     }
 
     render(delta?: number) {
@@ -256,7 +233,7 @@ export class Game {
             return;
         }
 
-        this.gameObjects.forEach(go => go.render(delta));
+        this.level.gameObjects.forEach(go => go.render(delta));
     }
 
     outOfBounds(go: GameObject) {
@@ -268,23 +245,10 @@ export class Game {
             || coords.y < 0 || coords.y + dimension.height > this.areaSize.height;
     }
 
-    collides() {
-        return false;
-    }
-
-    /**
-     * @param {Coords} coords
-     * @param {Dimension} dimension
-     * @returns boolean
-     */
-    collidesData(uuid: string, coords: Coords, dimension: Dimension) {
-        return this.gameObjects.some(go => go.uuid != uuid && Util.checkCollision(coords, dimension, go.coords, go.dimension));
-    }
-
-    hitsCollision(uuid: string, coords: Coords, dimension: Dimension) {
-        return this.gameObjects.find(go =>
-            go.uuid != uuid && go.hasCollision
-            && Util.checkCollision(coords, dimension, go.coords, go.dimension)
+    hitsCollision(obj: GameObject, newCoords: Coords) {
+        return this.level.gameObjects.find(go =>
+            go.uuid != obj.uuid && go.hasCollision
+            && Util.checkCollision(newCoords, obj.dimension, go.coords, go.dimension)
         );
     }
 
@@ -300,16 +264,20 @@ export class Game {
         return BOUND_KEYS.includes(keyCode);
     }
 
+    addGameObject(go: GameObject) {
+        this.level.addGameObject(go);
+    }
+
     /** @return {Game} */
     static getInstance() {
         return this._instance;
     }
 
-    getGameObjects() {
-        return this.gameObjects;
-    }
-
     get areaSize() {
         return this._areaSize;
+    }
+
+    get currentLvl() {
+        return this.level;
     }
 }

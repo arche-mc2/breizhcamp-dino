@@ -1,4 +1,3 @@
-import { Game } from "./game";
 import { GameObject } from "./gameobject";
 
 export class Item extends GameObject {
@@ -48,7 +47,7 @@ export class CodeCoin extends SpriteItem {
     constructor(name?: string) {
         super(name);
 
-        this.imgPath = 'images/logo-code.png';
+        this.imgPath = 'images/code-coin.png';
         this.className = 'code-coin';
     }
 }
@@ -57,6 +56,6 @@ export class ArcheGoal extends SpriteItem {
     constructor(name?: string) {
         super(name || 'arche-logo');
 
-        this.imgPath = 'images/building-arche.png';
+        this.imgPath = 'images/building-arche-glow.png';
     }
 }

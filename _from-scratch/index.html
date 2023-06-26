@@ -1,6 +1,6 @@
 <head>
     <script src="dist/bundle.js" type="module"></script>
-    <link rel="stylesheet" href="main.css">
+    <link href="dist/main.css" rel="stylesheet">
 </head>
 
 <body>
@@ -8,18 +8,30 @@
     <div class="game">
         <div class="top-bar">
             <div class="ui" id="score-block">
-                <span>Dino</span>
+                <label id="player-name">Dino</label>
                 <span id="current-score"></span>
             </div>
-            <div class="ui" id="time-left"></div>
+            <div class="ui" id="timer-block">
+                <label>Time</label>
+                <span id="current-timer"></span>
+            </div>
+            <div class="ui" id="level-block">
+                <label>Level</label>
+                <span id="current-level"></span>
+            </div>
         </div>
 
         <div id="menu-dialog">
             <h1>
+                <div class="logo">
                 <img src="images/arche-logo.png">
                 ❤️
                 <img src="images/logo-dino.png">
+                </div>
+                <span>Arche &lt;3 Dino</span>
             </h1>
+
+            <hr>
             
             <div class="content">
                 PAUSE

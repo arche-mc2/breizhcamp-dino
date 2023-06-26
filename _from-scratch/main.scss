@@ -1,6 +1,6 @@
 @font-face {
     font-family: "Super Mario Bros 2";
-    src: url('fonts/SuperMarioBros2.ttf') format("truetype");
+    src: url('/fonts/SuperMarioBros2.ttf') format("truetype");
 }
 
 body {
@@ -19,29 +19,34 @@ body {
 }
 
 .game {
-    /* position: absolute;
-    z-index: 999; */
     font-family: 'Super Mario Bros 2';
     color: white;
 }
 
-.top-bar .ui {
-    position: absolute;
-    z-index: 999;
-    top: 3vh;
+.top-bar {
+    .ui {
+        position: absolute;
+        z-index: 999;
+        top: 3vh;
+        display: flex;
+        flex-direction: column;
+        place-items: center;
+    }
+
+    #score-block {
+        left: 3vw;
+    }
+
+    #timer-block {
+        width: 100%;
+        text-align: center;
+    }
+
+    #level-block {
+        right: 3vw;
+    }
 }
 
-#score-block {
-    left: 3vw;
-    display: flex;
-    flex-direction: column;
-    place-items: center;
-}
-
-#time-left {
-    width: 100%;
-    text-align: center;
-}
 
 #menu-dialog {
     display: none;
@@ -53,18 +58,30 @@ body {
     background: rgba(0, 0, 0, .75);
     text-align: center;
     padding: 10px 30px;
-}
 
-#menu-dialog h1 {
-    height: 120px;
-    display: flex;
-    place-items: center;
-    place-content: center;
-    font-size: initial;
-}
+    h1 {
+        font-size: 18px;
+        color: indianred;
 
-#menu-dialog h1 img {
-    height: 100%;
+        .logo {
+            height: 120px;
+            display: flex;
+            place-items: center;
+            place-content: center;
+
+            img {
+                height: 100%;
+            }
+        }
+        
+        &+hr {
+            border-color: indianred;
+        }
+    }
+
+    .content {
+        margin: 1.5em auto;
+    }
 }
 
 .player {
@@ -78,24 +95,23 @@ body {
 
     /* transition: all ease-out .2s; */
 
+    // debug lol
     border: 1px solid red;
-    /* debug lol */
-}
 
-.player.crouch {
-    width: 85px;
-    height: 60px;
-    overflow: visible;
-}
+    img {
+        width: 100%;
+        height: 100%;
+    }
 
-.player.crouch img {
-    width: auto;
-    height: auto;
-}
-
-.player img {
-    width: 100%;
-    height: 100%;
+    &.crouch {
+        width: 85px;
+        height: 60px;
+        overflow: visible;
+        img {
+            width: auto;
+            height: auto;
+        }
+    }
 }
 
 .player.backward {

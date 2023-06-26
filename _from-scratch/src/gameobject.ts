@@ -73,7 +73,7 @@ export abstract class GameObject {
         const potentialCoords = this.potentialCoords(move);
 
         return !Game.getInstance().outOfBoundsData(potentialCoords, this.dimension)
-            && !Game.getInstance().hitsCollision(this.uuid, potentialCoords, this.dimension);
+            && !Game.getInstance().hitsCollision(this, potentialCoords);
     }
 
     render(delta?: number) {
