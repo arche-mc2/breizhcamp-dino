@@ -68,9 +68,9 @@ body {
 }
 
 .player {
-    background-image: url('images/dino-sprites.avif');
-    width: 100px;
-    height: 100px;
+    /* background-image: url('images/dino-sprites.avif'); */
+    width: 80px;
+    height: 80px;
 
     position: absolute;
 
@@ -80,6 +80,11 @@ body {
 
     border: 1px solid red;
     /* debug lol */
+}
+
+.player img {
+    width: 100%;
+    height: 100%;
 }
 
 .player.backward {

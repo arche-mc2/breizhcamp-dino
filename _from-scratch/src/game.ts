@@ -1,5 +1,5 @@
 import { Coords, Dimension, GameObject } from './gameobject';
-import { SpriteItem } from './item';
+import { CodeCoin, SpriteItem } from './item';
 import { Player } from './player';
 import { Util } from './util';
 import { TerrainBuilder } from './terrain-builder';
@@ -222,10 +222,6 @@ export class Game {
     outOfBoundsData(coords: Coords, dimension: Dimension) {
         return coords.x < 0 || coords.x + dimension.width > this.areaSize.width
             || coords.y < 0 || coords.y + dimension.height > this.areaSize.height;
-    }
-
-    collides() {
-        return false;
     }
 
     /**

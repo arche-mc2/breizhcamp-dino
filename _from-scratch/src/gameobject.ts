@@ -1,3 +1,4 @@
+import { Subject } from "rxjs";
 import { Game } from "./game";
 import { Util } from "./util";
 
@@ -26,6 +27,8 @@ export abstract class GameObject {
     falling = false;
     // must handle collision
     hasCollision = true;
+
+    onHit$ = new Subject();
 
     constructor(name?: string) {
         this.name = name;
@@ -88,6 +91,10 @@ export abstract class GameObject {
     setCoords(coords: Coords) {
         this.coords = coords;
         return this;
+    }
+
+    onHit() {
+        return this.onHit$;
     }
 
     abstract init(): void;

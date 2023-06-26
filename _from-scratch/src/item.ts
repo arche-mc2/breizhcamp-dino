@@ -19,7 +19,7 @@ export class Item extends GameObject {
 
 export class SpriteItem extends Item {
 
-    private imgPath: string;
+    protected imgPath: string;
 
     init() {
         super.init();
@@ -36,5 +36,22 @@ export class SpriteItem extends Item {
     setImgPath(path: string) {
         this.imgPath = path;
         return this;
+    }
+}
+
+export class CodeCoin extends SpriteItem {
+    constructor(name?: string) {
+        super(name);
+
+        this.imgPath = 'images/logo-code.png';
+        this.className = 'code-coin';
+    }
+}
+
+export class ArcheGoal extends SpriteItem {
+    constructor(name?: string) {
+        super(name || 'arche-logo');
+
+        this.imgPath = 'images/arche-logo.png';
     }
 }

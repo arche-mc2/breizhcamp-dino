@@ -1,25 +1,25 @@
-import { Anim } from './anim';
+import { distinct, distinctUntilChanged } from 'rxjs';
+import { Anim, AnimRunner, CharAnim } from './anim';
 import { MOVE_PAD } from './game';
 import { GameObject } from './gameobject';
 
-const SPRITE_WIDTH = 100;
-const SPRITE_HEIGHT = 100;
+const SPRITE_WIDTH = 80;
+const SPRITE_HEIGHT = 80;
 const FPS = 15;
 const MAX_JUMP_HEIGHT = 300;
 
 export class Player extends GameObject {
-    currentAnim: number
-    
-    /** @type {number} */
-    spriteNumber = 0;
+    currentAnim: number;
 
     deltaSinceLastAnimRefresh = 0;
 
     dimension = { width: SPRITE_WIDTH, height: SPRITE_HEIGHT };
 
-    animRunner: any; // setInterval() ref
+    animRunner = new AnimRunner();
 
     lookLeft = false; // replace with look direction ;o
+
+    spriteEl: HTMLImageElement;
 
     jumpHeight: number;
     jumpSpeed: number;
@@ -33,6 +33,10 @@ export class Player extends GameObject {
 
     init() {
         this.el = this.createElement();
+
+        this.spriteEl = document.createElement('img');
+        this.el.appendChild(this.spriteEl);
+
         document.body.appendChild(this.el);
 
         this.idle();
@@ -51,28 +55,22 @@ export class Player extends GameObject {
         this.playAnim(CharAnim.IDLE);
     }
 
-    playAnim(anim: number) {
-        if (this.currentAnim === anim) {
-            return;
+    playAnim(anim: CharAnim | Anim) {
+        if (anim instanceof Anim) {
+            this.animRunner.run(anim);
+        } else {
+            this.animRunner.runIndex(anim);
         }
-
-        if (this.animRunner) {
-            clearInterval(this.animRunner);
-        }
-
-        this.currentAnim = anim;
-
-        // this.animRunner = setInterval(_ => this.refreshSprite(), 800 / CharAnim.MAX[anim]);
     }
 
     moveX(amount: number, to = false) {
-        this.playAnim(CharAnim.RUN);
+        this.playAnim(CharAnim.WALK);
 
         super.moveX(amount, to);
     }
 
     moveY(amount: number) {
-        this.playAnim(CharAnim.RUN);
+        // this.playAnim(CharAnim.WALK);
 
         super.moveY(amount);
     }
@@ -89,7 +87,7 @@ export class Player extends GameObject {
 
     canJump() {
         // not jumping already, and we're on the floor
-        return (!this.jumpSpeed || this.jumpSpeed <= 0) && !this.canMove({y: -MOVE_PAD});
+        return (!this.jumpSpeed || this.jumpSpeed <= 0) && !this.canMove({ y: -MOVE_PAD });
     }
 
     updateJump() {
@@ -99,33 +97,26 @@ export class Player extends GameObject {
             this.jumpHeight = MAX_JUMP_HEIGHT;
         }
 
-        if (this.canMove({y: this.jumpSpeed})) {
+        if (this.canMove({ y: this.jumpSpeed })) {
             this.moveY(this.jumpSpeed);
         }
-        
+
         this.jumpSpeed -= 2;
     }
 
     initJump() {
         this.jumpHeight = 0;
         this.jumpSpeed = 30;
+
+        // this.playAnim(CharAnim.JUMP);
     }
 
     refreshSprite(delta?: number) {
-        this.deltaSinceLastAnimRefresh += delta;
+        const index = this.animRunner.refresh(delta);
 
-        if (this.deltaSinceLastAnimRefresh < 500 / CharAnim.MAX[this.currentAnim]) {
-            return;
+        if (index) {
+            this.spriteEl.src = `images/sprites/${this.animRunner.running.name}/${index}.avif`;
         }
-
-        this.deltaSinceLastAnimRefresh = 0;
-
-        if (this.spriteNumber > CharAnim.MAX[this.currentAnim] - 1) {
-            this.spriteNumber = 0;
-        }
-
-        this.el.style.backgroundPositionX = -(this.spriteNumber++ * SPRITE_WIDTH) + 'px';
-        this.el.style.backgroundPositionY = -(this.currentAnim * SPRITE_HEIGHT) + 'px';
     }
 
     render(delta?: number) {
@@ -134,13 +125,4 @@ export class Player extends GameObject {
         // huhuuuuuuuu
         this.refreshSprite(delta);
     }
-}
-
-class CharAnim {
-    static IDLE = 0;
-    static FALL = 1;
-    static RUN = 2;
-    static JUMP = 3;
-
-    static MAX = [5, 6, 9, 13];
 }

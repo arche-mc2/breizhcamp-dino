@@ -1,5 +1,5 @@
 import { Game } from "./game";
-import { SpriteItem } from "./item";
+import { ArcheGoal, CodeCoin, SpriteItem } from "./item";
 import { Util } from "./util";
 import { Wall } from "./wall";
 
@@ -49,9 +49,7 @@ export class TerrainBuilder {
 
     spawnCoins() {
         this.getGroundAndWalls().forEach(wall => {
-            const coin = new SpriteItem()
-                .setImgPath('images/logo-code.png')
-                .addClassName('code-coin')
+            const coin = new CodeCoin()
                 .setCoords({ x: wall.coords.x + wall.dimension.width / 2, y: wall.coords.y + 30 })
                 .setDimension({ width: 30, height: 30 });
 
@@ -65,8 +63,7 @@ export class TerrainBuilder {
         console.log('Area size : ', game.areaSize);
 
         setTimeout(() => {
-            const archeLogo = new SpriteItem('arche-logo')
-                .setImgPath('images/arche-logo.png')
+            const archeLogo = new ArcheGoal()
                 .setDimension({ width: 100, height: 100 })
                 .setCoords({ x: game.areaSize.width - 120, y: game.areaSize.height - 120 });
 
