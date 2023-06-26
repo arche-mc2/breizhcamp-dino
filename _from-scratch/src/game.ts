@@ -11,7 +11,7 @@ import { Wall } from './wall';
 const BOUND_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', 'Space'];
 
 export const MOVE_PAD = 5; // distance in pixel of a single move
-export const FALL_PAD = 10;
+export const FALL_PAD = 5;
 
 const AVAILABLE_BGS = [
     'gta.jpg',
@@ -112,7 +112,16 @@ export class Game {
             }
 
             if (e.key === 'w') {
-                const newWall = this.terrainBuilder.nextWall(this.gameObjects.find(go => go instanceof Wall) as Wall);
+                const newWall = this.terrainBuilder.generate();
+                newWall.blockCount = 3;
+                newWall.computeDimension();
+
+                const adjustCoords = this.player.inFrontOf();
+                if (this.player.lookLeft) {
+                    adjustCoords.x -= newWall.dimension.width;
+                }
+                newWall.coords = adjustCoords;
+
                 this.addGameObject(newWall);
             }
 
@@ -224,7 +233,7 @@ export class Game {
                 return;
             }
 
-            if (go.shouldFall && go.canMove({ y: -FALL_PAD })) {
+            if (go.hasGravity && go.canMove({ y: -FALL_PAD })) {
                 go.moveY(-FALL_PAD);
             }
         });
@@ -273,7 +282,7 @@ export class Game {
     }
 
     hitsCollision(uuid: string, coords: Coords, dimension: Dimension) {
-        return this.gameObjects.some(go =>
+        return this.gameObjects.find(go =>
             go.uuid != uuid && go.hasCollision
             && Util.checkCollision(coords, dimension, go.coords, go.dimension)
         );

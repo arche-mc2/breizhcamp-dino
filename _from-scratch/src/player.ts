@@ -29,7 +29,7 @@ export class Player extends GameObject {
         this.resetDimension();
 
         // subject to gravity
-        this.shouldFall = true;
+        this.hasGravity = true;
     }
 
     init() {
@@ -143,5 +143,9 @@ export class Player extends GameObject {
 
         // huhuuuuuuuu
         this.refreshSprite(delta);
+    }
+
+    inFrontOf() {
+        return this.lookLeft ? this.left() : this.right();
     }
 }

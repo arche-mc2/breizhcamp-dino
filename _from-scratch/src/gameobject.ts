@@ -23,7 +23,7 @@ export abstract class GameObject {
     coords: Coords = { x: 0, y: 0 };
 
     // subject to gravity
-    shouldFall = false;
+    hasGravity = false;
     falling = false;
     // must handle collision
     hasCollision = true;
@@ -85,7 +85,7 @@ export abstract class GameObject {
         this.dimension = dim;
         return this;
     }
-    
+
     setCoords(coords: Coords) {
         this.coords = coords;
         return this;
@@ -95,5 +95,21 @@ export abstract class GameObject {
 
     delete() {
         document.body.removeChild(this.el);
+    }
+
+    left() {
+        return { x: this.coords.x - 1, y: this.coords.y };
+    }
+
+    right() {
+        return { x: this.coords.x + this.dimension.width, y: this.coords.y };
+    }
+
+    below() {
+        return { x: this.coords.x, y: this.coords.y - 1 };
+    }
+
+    above() {
+        return { x: this.coords.x, y: this.coords.y + this.dimension.height };
     }
 }

@@ -13,6 +13,11 @@ export class Item extends GameObject {
             this.el.classList.add(this.className);
         }
 
+        if (this.dimension) {
+            this.el.style.width = this.dimension.width + 'px';
+            this.el.style.height = this.dimension.height + 'px';
+        }
+
         document.body.appendChild(this.el);
     }
 }
@@ -52,6 +57,6 @@ export class ArcheGoal extends SpriteItem {
     constructor(name?: string) {
         super(name || 'arche-logo');
 
-        this.imgPath = 'images/arche-logo.png';
+        this.imgPath = 'images/building-arche.png';
     }
 }

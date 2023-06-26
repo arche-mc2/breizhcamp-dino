@@ -1,4 +1,5 @@
 import { Game } from "./game";
+import { Coords, Dimension } from "./gameobject";
 import { ArcheGoal, CodeCoin, SpriteItem } from "./item";
 import { Util } from "./util";
 import { Wall } from "./wall";
@@ -39,10 +40,7 @@ export class TerrainBuilder {
         w.blockSize = Util.rand(15, 35);
         w.blockCount = Util.rand(1, 15);
 
-        w.dimension = {
-            width: w.blockCount * w.blockSize,
-            height: w.blockSize
-        };
+        w.computeDimension();
 
         return w;
     }
@@ -64,8 +62,8 @@ export class TerrainBuilder {
 
         setTimeout(() => {
             const archeLogo = new ArcheGoal()
-                .setDimension({ width: 100, height: 100 })
-                .setCoords({ x: game.areaSize.width - 120, y: game.areaSize.height - 120 });
+                .setDimension({ width: 200, height: 200 })
+                .setCoords({ x: game.areaSize.width - 220, y: game.areaSize.height - 220 });
 
             Game.getInstance().addGameObject(archeLogo);
         }, 100);

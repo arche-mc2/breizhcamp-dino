@@ -22,8 +22,8 @@ export class Util {
     }
 
     static checkPointCollides(start1: number, end1: number, start2: number, end2: number) {
-        return (start1 > start2 && start1 < end2)
-            || (start2 > start1 && start2 < end1);
+        return (start1 >= start2 && start1 <= end2)
+            || (start2 >= start1 && start2 <= end1);
     }
 
     static distanceOnAxis(axisType: number, coords1: Coords, dim1: Dimension, coords2: Coords, dim2: Dimension) {

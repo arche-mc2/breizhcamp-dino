@@ -46,7 +46,7 @@ body {
 #menu-dialog {
     display: none;
     position: absolute;
-    z-index: 999;
+    z-index: 1000;
     width: 20vw;
     left: calc(50vw - 20vw / 2);
     top: 25vh;
@@ -119,8 +119,6 @@ body {
 
 .item {
     position: absolute;
-    width: 100px;
-    height: 100px;
 }
 
 .item img {
@@ -128,8 +126,8 @@ body {
 }
 
 .code-coin {
-    width: 30px;
-    height: 30px;
+    /* width: 30px;
+    height: 30px; */
 
     animation: 1s infinite alternate flip;
 }

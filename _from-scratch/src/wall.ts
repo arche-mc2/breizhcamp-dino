@@ -12,6 +12,12 @@ export class Wall extends GameObject {
     orientation = 0; // 0: horizontal, 1: vertical
     blockStyle: number;
 
+    constructor(name?: string) {
+        super(name);
+
+        this.hasCollision = true;
+    }
+
     init() {
         const el = document.createElement('div');
         el.classList.add('wall');
@@ -42,9 +48,14 @@ export class Wall extends GameObject {
 
         document.body.appendChild(el);
 
-        setTimeout(() => this.dimension = { width: el.getBoundingClientRect().width, height: el.getBoundingClientRect().height });
-
         return el;
+    }
+
+    computeDimension() {
+        this.dimension = {
+            width: this.blockCount * this.blockSize,
+            height: this.blockSize
+        };
     }
 
     generateBlockColor(exclude: number) {
