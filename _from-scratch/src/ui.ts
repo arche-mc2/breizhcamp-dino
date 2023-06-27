@@ -137,7 +137,17 @@ export class Ui {
     }
 
     onSubmitScore(score: number, level: number, data: FormData) {
-        // @TODO: send to API to save data :)
+        data.append('score', score + '');
+        data.append('level', level + '');
+        
+        fetch('https://bonsoironline.fr/dino', {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: data
+        }).then(resp => console.log('Save score response : ', resp));
 
         const newScore: HighScore = {
             name: data.get('name').toString(),
