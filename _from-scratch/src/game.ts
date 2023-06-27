@@ -6,7 +6,6 @@ import { TerrainBuilder } from './terrain-builder';
 import { Ui } from './ui';
 import { tap, filter, takeWhile, timer } from 'rxjs';
 import { SoundManager } from './sound-manager';
-import { Wall } from './wall';
 import { Level } from './level';
 
 const BOUND_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', 'Space'];
@@ -14,7 +13,9 @@ const BOUND_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', 'Space'];
 export const MOVE_PAD = 5; // distance in pixel of a single move
 export const FALL_PAD = 5;
 
-const INITIAL_TIMER = 20;
+const INITIAL_TIMER = 30;
+
+const PLAYER_KEY = "current-player";
 
 export class Game {
     private player: Player;
@@ -70,6 +71,10 @@ export class Game {
                 return;
             }
 
+            if (this.paused) {
+                return;
+            }
+
             if (e.key === 'w') {
                 const newWall = this.terrainBuilder.generate();
                 newWall.blockCount = 3;
@@ -104,6 +109,7 @@ export class Game {
         this.ui = new Ui();
 
         this.updateScore(0);
+        this.ui.loadHighscores();
     }
 
     updateScore(score: number) {
@@ -128,7 +134,7 @@ export class Game {
 
         if (this.timeLeft <= 0) {
             this.timeOver = true;
-            this.ui.openMenuDialog('Time oveeeeeeer :(');
+            this.ui.openTimeOverDialog(this.currentScore);
         }
     }
 
@@ -187,7 +193,7 @@ export class Game {
     }
 
     resetLevel() {
-        this.timeLeft = INITIAL_TIMER;
+        this.timeLeft = INITIAL_TIMER - (this.currentLevelNumber - 1);
         this.player.coords = { x: 0, y: 0 };
     }
 

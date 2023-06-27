@@ -1,4 +1,5 @@
 import { Game } from "./game";
+import { Dimension } from "./gameobject";
 import { ArcheGoal, CodeCoin } from "./item";
 import { Util } from "./util";
 import { Wall } from "./wall";
@@ -59,9 +60,11 @@ export class TerrainBuilder {
     spanwGoal() {
         const game = Game.getInstance();
 
+        const dims = {width: 300, height: 180} as Dimension;
+
         const archeLogo = new ArcheGoal()
-            .setDimension({ width: 200, height: 120 })
-            .setCoords({ x: game.areaSize.width - 220, y: game.areaSize.height - 160 });
+            .setDimension(dims)
+            .setCoords({ x: game.areaSize.width - dims.width, y: game.areaSize.height - dims.height - (game.areaSize.height * .05) });
 
         Game.getInstance().addGameObject(archeLogo);
     }

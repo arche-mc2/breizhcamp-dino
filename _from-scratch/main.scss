@@ -1,3 +1,6 @@
+$primary: indianred;
+$text: white;
+
 @font-face {
     font-family: "Super Mario Bros 2";
     src: url('/fonts/SuperMarioBros2.ttf') format("truetype");
@@ -20,7 +23,7 @@ body {
 
 .game {
     font-family: 'Super Mario Bros 2';
-    color: white;
+    color: $text;
 }
 
 .top-bar {
@@ -47,6 +50,13 @@ body {
     }
 }
 
+.text-center {
+    text-align: center;
+}
+
+.content-center {
+    place-content: center;
+}
 
 #menu-dialog {
     display: none;
@@ -54,14 +64,19 @@ body {
     z-index: 1000;
     width: 20vw;
     left: calc(50vw - 20vw / 2);
-    top: 25vh;
+    top: 15vh;
     background: rgba(0, 0, 0, .75);
     text-align: center;
     padding: 10px 30px;
 
+    &.large {
+        width: 30rem;
+        left: calc(50vw - 30rem / 2);
+    }
+
     h1 {
         font-size: 18px;
-        color: indianred;
+        color: $primary;
 
         .logo {
             height: 120px;
@@ -73,14 +88,65 @@ body {
                 height: 100%;
             }
         }
-        
+
         &+hr {
-            border-color: indianred;
+            border-color: $primary;
         }
     }
 
     .content {
         margin: 1.5em auto;
+    }
+
+    .your-score-block {
+        div {
+            display: flex;
+            place-items: center;
+            margin: 1em auto;
+        }
+
+        label {
+            width: 180px;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        input {
+            background-color: transparent;
+            color: $text;
+            font-family: inherit;
+            border-color: $text;
+            height: 30px;
+            padding: 0 5px;
+            width: 300px;
+            border-radius: 4px;
+            border-style: solid;
+
+            &.small {
+                font-size: .75rem;
+            }
+        }
+
+        button {
+            background: $primary;
+            color: $text;
+            border-radius: 5px;
+            border: 1px solid $text;
+            padding: 10px 30px;
+            font-family: inherit;
+            cursor: pointer;
+        }
+    }
+
+    #highscore-table {
+        border-color: $primary;
+        color: $text;
+        width: 100%;
+        text-align: center;
+
+        td {
+            padding: .5rem;
+        }
     }
 }
 
@@ -96,7 +162,7 @@ body {
     /* transition: all ease-out .2s; */
 
     // debug lol
-    border: 1px solid red;
+    // border: 1px solid red;
 
     img {
         width: 100%;
@@ -107,44 +173,42 @@ body {
         width: 85px;
         height: 60px;
         overflow: visible;
+
         img {
             width: auto;
             height: auto;
         }
     }
-}
 
-.player.backward {
-    transform: scaleX(-1);
+    &.backward {
+        transform: scaleX(-1);
+    }
 }
 
 .wall {
     position: absolute;
     white-space: nowrap;
-}
 
-.wall>div {
-    display: inline-block;
-    border: 1px solid white;
-    height: 100%;
-}
+    >div {
+        display: inline-block;
+        border: 1px solid $text;
+        height: 100%;
 
-.wall>div:hover {
-    border: 1px solid black;
+        &:hover {
+            border-color: black;
+        }
+    }
 }
 
 .item {
     position: absolute;
+
+    img {
+        width: 100%;
+    }
 }
 
-.item img {
-    width: 100%;
-}
-
-.code-coin {
-    /* width: 30px;
-    height: 30px; */
-
+body:not(.paused) .code-coin {
     animation: 1s infinite alternate flip;
 }
 
