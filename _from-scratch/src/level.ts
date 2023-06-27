@@ -32,7 +32,7 @@ export class Level {
     generate() {
         this.loadBackground();
 
-        this.terrainBuilder.buildWalls(7).forEach(wall => this.addGameObject(wall));
+        this.terrainBuilder.buildWalls(Util.rand(5, 15)).forEach(wall => this.addGameObject(wall));
 
         this.terrainBuilder.spanwGoal();
         this.terrainBuilder.spawnCoins();

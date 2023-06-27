@@ -2,8 +2,8 @@ const HIGHSCORE_KEY = "highscores";
 
 export interface HighScore {
     name: string;
-    email?: string;
     score: number;
+    level: number;
 }
 
 export class Ui {
@@ -41,13 +41,35 @@ export class Ui {
     }
 
     refreshHighscores() {
-        const existing = this.menuDialogContent.querySelector('#highscore-table');
+        const existing = this.menuDialogContent.querySelector('#highscore-table-wrapper');
 
         if (existing) {
             existing.remove();
         }
 
-        this.menuDialogContent.appendChild(this.buildHighScoreTable(this.highScores));
+        const wrapper = document.createElement('div');
+        wrapper.id = 'highscore-table-wrapper';
+
+        wrapper.appendChild(this.buildHighScoreTable(this.highScores));
+
+        const blinkRetry = document.createElement('div');
+        blinkRetry.id = 'retry-btn';
+        blinkRetry.innerText = 'Retry';
+        blinkRetry.addEventListener('click', e => this.goRetry());
+
+        document.addEventListener('keydown', e => {
+            if (e.code === 'Enter') {
+                this.goRetry();
+            }
+        });
+
+        wrapper.appendChild(blinkRetry);
+
+        this.menuDialogContent.appendChild(wrapper);
+    }
+
+    goRetry() {
+        document.location.reload();
     }
 
     pause() {
@@ -74,7 +96,7 @@ export class Ui {
         this.menuDialog.style.display = '';
     }
 
-    openTimeOverDialog(score: number) {
+    openTimeOverDialog(score: number, level: number) {
         this.openMenuDialog('Time oveeeeeeer !', ['large']);
 
         const yourScoreBlock = document.createElement('div');
@@ -82,6 +104,7 @@ export class Ui {
 
         const yourScoreDiv = document.createElement('div');
         const yourNameForm = document.createElement('form');
+        yourNameForm.setAttribute('autocomplete', 'off');
 
         yourScoreDiv.classList.add('content-center');
         yourScoreDiv.innerHTML = `<label>Score :</label><span>${score}</span>`;
@@ -90,6 +113,7 @@ export class Ui {
         <div><label>Name:</label><input name="name"></div>
         <div><label>[LastName]:</label><input name="lastname"></div>
         <div><label>[Email]:</label><input name="email" class="small"></div>
+        <div><label class="small">[Situation ?]:</label><input name="situation" class="small"></div>
         <button>OK</button>`;
 
         yourScoreBlock.appendChild(yourScoreDiv);
@@ -104,7 +128,7 @@ export class Ui {
 
             // only required value
             if (data.get('name')) {
-                this.onSubmitScore(score, data);
+                this.onSubmitScore(score, level, data);
                 yourNameForm.remove();
             }
         });
@@ -112,13 +136,13 @@ export class Ui {
         // this.refreshHighscores();
     }
 
-    onSubmitScore(score: number, data: FormData) {
+    onSubmitScore(score: number, level: number, data: FormData) {
         // @TODO: send to API to save data :)
 
         const newScore: HighScore = {
             name: data.get('name').toString(),
-            email: data.get('email').toString(),
-            score: score
+            score,
+            level
         };
 
         this.highScores.push(newScore);

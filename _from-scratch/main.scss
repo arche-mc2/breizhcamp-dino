@@ -67,7 +67,7 @@ body {
     top: 15vh;
     background: rgba(0, 0, 0, .75);
     text-align: center;
-    padding: 10px 30px;
+    padding: 0 2rem;
 
     &.large {
         width: 30rem;
@@ -95,20 +95,24 @@ body {
     }
 
     .content {
-        margin: 1.5em auto;
+        margin: 1.5rem auto;
     }
 
     .your-score-block {
         div {
             display: flex;
             place-items: center;
-            margin: 1em auto;
+            margin: 1rem auto;
         }
 
         label {
             width: 180px;
             display: inline-block;
             white-space: nowrap;
+            
+            &.small {
+                font-size: .75rem;
+            }
         }
 
         input {
@@ -219,5 +223,19 @@ body:not(.paused) .code-coin {
 
     to {
         transform: rotateY(0);
+    }
+}
+
+#retry-btn {
+    margin-top: 1.5rem;
+    font-size: 1.5rem;
+    color: gold;
+    animation: blinking 1s steps(5, start) infinite;
+    cursor: pointer;
+}
+
+@keyframes blinking {
+    to {
+        visibility: hidden;
     }
 }

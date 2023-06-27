@@ -134,7 +134,7 @@ export class Game {
 
         if (this.timeLeft <= 0) {
             this.timeOver = true;
-            this.ui.openTimeOverDialog(this.currentScore);
+            this.ui.openTimeOverDialog(this.currentScore, this.currentLevelNumber);
         }
     }
 

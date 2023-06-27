@@ -23,7 +23,9 @@ export class TerrainBuilder {
     // method like isReachable() ? based on a max jump / distance possible
     nextWall(fromWall: Wall): Wall {
         const newWall = this.generate();
-        console.log('Next wall : ', newWall);
+
+        // faire quelque chooooose ...
+        
         return newWall;
     }
 
