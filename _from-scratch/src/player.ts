@@ -134,7 +134,7 @@ export class Player extends GameObject {
         const index = this.animRunner.refresh(delta);
 
         if (index) {
-            this.spriteEl.src = `images/sprites/${this.animRunner.running.name}/${index}.avif`;
+            this.spriteEl.src = `images/sprites/${this.animRunner.running.name}/${index}.png`;
         }
     }
 

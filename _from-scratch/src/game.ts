@@ -184,6 +184,7 @@ export class Game {
             this.currentLevelNumber++;
         }
 
+        this.updateScore(this.currentScore + (this.currentLevelNumber - 1) * 1000);
         this.ui.refreshLevel(this.currentLevelNumber);
         this.level = new Level();
         this.level.generate();

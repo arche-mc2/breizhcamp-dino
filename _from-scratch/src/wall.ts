@@ -31,7 +31,7 @@ export class Wall extends GameObject {
 
             if (this.blockStyle > 0) {
                 block = document.createElement('img');
-                block.src = `images/block-texture/${this.blockStyle}.avif`;
+                block.src = `images/block-texture/${this.blockStyle}.png`;
             } else {
                 block = document.createElement('div');
                 lastColorIndex = this.generateBlockColor(lastColorIndex);

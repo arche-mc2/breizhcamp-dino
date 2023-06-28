@@ -6,6 +6,18 @@ export interface HighScore {
     level: number;
 }
 
+const PAUSE_MENU_CONTENT = `
+<p class="secondary">Pause</p>
+<h3>Commandes :</h3>
+<div class="commands-list">
+    <div>← → : se deplacer</div>
+    <div>Espace : sauter</div>
+    <div>↓ : se baisser</div>
+    <div>w : placer un mur</div>
+    <div>↑ : rentrer dans Arche ! (niveau suivant)</div>
+</div>
+`;
+
 export class Ui {
     scoreElement: HTMLElement;
     timeElement: HTMLElement;
@@ -38,6 +50,7 @@ export class Ui {
 
     refreshTime(time: number) {
         this.timeElement.innerText = time + '';
+        this.timeElement.classList.toggle('urgence', time <= 5);
     }
 
     refreshHighscores() {
@@ -54,6 +67,7 @@ export class Ui {
 
         const blinkRetry = document.createElement('div');
         blinkRetry.id = 'retry-btn';
+        blinkRetry.classList.add('blink', 'secondary');
         blinkRetry.innerText = 'Retry';
         blinkRetry.addEventListener('click', e => this.goRetry());
 
@@ -73,7 +87,7 @@ export class Ui {
     }
 
     pause() {
-        this.openMenuDialog('Pause');
+        this.openMenuDialog(PAUSE_MENU_CONTENT);
         document.body.classList.add('paused');
     }
 
@@ -113,7 +127,11 @@ export class Ui {
         <div><label>Name:</label><input name="name"></div>
         <div><label>[LastName]:</label><input name="lastname"></div>
         <div><label>[Email]:</label><input name="email" class="small"></div>
+        <div><label>[Phone]:</label><input name="phone" class="small"></div>
         <div><label class="small">[Situation ?]:</label><input name="situation" class="small"></div>
+        <div class="checkbox"><label class="small for-checkbox" for="agreement">
+        J'autorise ce site à conserver mes donnees transmises via ce formulaire</label>
+        <input type="checkbox" name="agreement" id="agreement"></div>
         <button>OK</button>`;
 
         yourScoreBlock.appendChild(yourScoreDiv);
@@ -139,13 +157,9 @@ export class Ui {
     onSubmitScore(score: number, level: number, data: FormData) {
         data.append('score', score + '');
         data.append('level', level + '');
-        
-        fetch('https://bonsoironline.fr/dino', {
+
+        fetch('https://bonsoironline.fr/dino/', {
             method: 'POST',
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
             body: data
         }).then(resp => console.log('Save score response : ', resp));
 
