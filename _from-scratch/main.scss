@@ -78,15 +78,15 @@ body {
     position: absolute;
     z-index: 1000;
     width: 25vw;
-    left: calc(50vw - 25vw / 2);
-    top: 10vh;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     background: rgba(0, 0, 0, .75);
     text-align: center;
     padding: 0 2rem;
 
     &.large {
         width: 30rem;
-        left: calc(50vw - 30rem / 2);
     }
 
     h1 {
@@ -193,6 +193,14 @@ body {
         font-size: 1.5rem;
         cursor: pointer;
     }
+}
+
+.help-icon {
+    width: 70px;
+    position: fixed;
+    bottom: 1vh;
+    right: 1vw;
+    cursor: pointer;
 }
 
 .player {

@@ -65,7 +65,11 @@ export class Game {
         window.addEventListener('resize', e => this.computeAreaSize());
 
         document.addEventListener('keydown', e => {
-            if (e.code === 'Escape' && !this.timeOver) {
+            if (this.timeOver) {
+                return;
+            }
+
+            if (e.code === 'Escape') {
                 this.handlePause();
                 e.stopPropagation();
                 return;
@@ -103,6 +107,14 @@ export class Game {
                 this.player.uncrouch();
             }
         });
+
+        if (this.ui.helpIconButton) {
+            this.ui.helpIconButton.addEventListener('click', e => {
+                if (!this.timeOver) {
+                    this.handlePause();
+                }
+            });
+        }
     }
 
     initUi() {

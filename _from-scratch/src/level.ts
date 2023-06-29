@@ -40,7 +40,11 @@ export class Level {
 
     loadBackground() {
         const randomBackIndex = Math.floor(Math.random() * AVAILABLE_BGS.length - 1) + 1;
-        document.body.style.backgroundImage = 'url(images/bg/' + AVAILABLE_BGS[randomBackIndex] + ')'
+        document.body.style.backgroundImage = 'url(images/bg/' + AVAILABLE_BGS[randomBackIndex] + ')';
+
+        if (AVAILABLE_BGS[randomBackIndex] === 'retro.jpg') {
+            document.body.style.backgroundSize = 'contain';
+        }
     }
 
     addGameObject(go: GameObject, autoDisplay = true) {

@@ -29,6 +29,8 @@ export class Ui {
     menuDialog: HTMLDivElement;
     menuDialogContent: HTMLDivElement;
 
+    helpIconButton: HTMLImageElement;
+
     highScores?: HighScore[];
 
     constructor() {
@@ -40,6 +42,8 @@ export class Ui {
 
         this.menuDialog = document.querySelector('#menu-dialog');
         this.menuDialogContent = this.menuDialog.querySelector('.content');
+
+        this.helpIconButton = document.querySelector('.help-icon');
     }
 
     refreshScore(score: number) {
