@@ -1,4 +1,6 @@
 const HIGHSCORE_KEY = "highscores";
+const LAST_SCORE_SYNC = "last-score-sync";
+const API_URL = 'https://bzhcamp-dino-arche.fr/api/';
 
 export interface HighScore {
     name: string;
@@ -158,7 +160,7 @@ export class Ui {
         data.append('score', score + '');
         data.append('level', level + '');
 
-        fetch('https://bonsoironline.fr/dino/', {
+        fetch(API_URL + '?send-highscore', {
             method: 'POST',
             body: data
         }).then(resp => console.log('Save score response : ', resp));
@@ -182,7 +184,7 @@ export class Ui {
         table.setAttribute('border', '1');
         table.setAttribute('cellspacing', '0');
 
-        highScores.sort((a, b) => a.score < b.score ? 1 : -1).slice(0, 10).forEach(row => {
+        highScores.sort((a, b) => parseInt(a.score + '') < parseInt(b.score + '') ? 1 : -1).slice(0, 10).forEach(row => {
             const tr = document.createElement('tr');
             const nameCell = document.createElement('td');
             const scoreCell = document.createElement('td');
@@ -200,9 +202,22 @@ export class Ui {
     }
 
     loadHighscores() {
-        const json = localStorage.getItem(HIGHSCORE_KEY);
+        const lastScoreSync = localStorage.getItem(LAST_SCORE_SYNC);
 
-        this.highScores = json ? JSON.parse(json) : [];
+        // need to sync ?
+        if (!lastScoreSync || Date.now() - parseInt(lastScoreSync) > 3 * 60 * 1000) {
+            fetch(API_URL + '?high-list-please').then(r => r.json()).then((data: any[]) => {
+                data.forEach(row => row.score = parseInt(row.score));
+                this.highScores = data as HighScore[];
+                this.saveHighscores();
+
+                localStorage.setItem(LAST_SCORE_SYNC, Date.now() + '');
+            });
+        } else {
+            const json = localStorage.getItem(HIGHSCORE_KEY);
+
+            this.highScores = json ? JSON.parse(json) : [];
+        }
     }
 
     saveHighscores() {

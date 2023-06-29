@@ -4,6 +4,8 @@ Petit projet avec un dino qui saute sur des plateformes ! Collectez des points e
 
 On espère le voir sur le stand de Arche MC2 au Breizhcamp :)
 
+> Tourne sur https://bzhcamp-dino-arche.fr/
+
 ## Mise en place
 
 ### Pré-requis (installation de l'environnement)
@@ -16,10 +18,10 @@ On espère le voir sur le stand de Arche MC2 au Breizhcamp :)
 ### Commandes (dans un terminal)
 
 ```
-1. git clone https://github.com/arche-mc2/breizhcamp-dino # pour récupérer ce projet
-2. cd breizhcamp-dino/_from-scratch # se placer dans le projet
+1. git clone https://github.com/arche-mc2/breizhcamp-dino # récupère ce projet
+2. cd breizhcamp-dino/_from-scratch # place dans le projet
 3. npm i # installe les dépendances
-4. npm i -g sass # pour compiler les fichiers sass
+4. npm i -g sass webpack webpack-cli # pour compiler (.scss et .ts)
 5. webpack build && sass main.scss dist/main.css # compile les sources
 ```
 
