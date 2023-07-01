@@ -21,6 +21,7 @@ export class Player extends GameObject {
     jumpHeight: number;
     jumpSpeed: number;
 
+    running = false;
     crouched = false;
 
     constructor() {
@@ -128,6 +129,12 @@ export class Player extends GameObject {
         this.resetDimension();
         this.idle();
         this.el.classList.remove('crouch');
+    }
+
+    toggleRunning(running?: boolean) {
+        this.running = running;
+
+        this.el.classList.toggle('running', running);
     }
 
     refreshSprite(delta?: number) {

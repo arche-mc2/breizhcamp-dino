@@ -13,6 +13,7 @@ const PAUSE_MENU_CONTENT = `
 <h3>Commandes :</h3>
 <div class="commands-list">
     <div>← → : se deplacer</div>
+    <div>Shift : courir</div>
     <div>Espace : sauter</div>
     <div>↓ : se baisser</div>
     <div>w : placer un mur</div>

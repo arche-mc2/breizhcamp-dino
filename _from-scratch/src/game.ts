@@ -8,7 +8,7 @@ import { tap, filter, takeWhile, timer } from 'rxjs';
 import { SoundManager } from './sound-manager';
 import { Level } from './level';
 
-const BOUND_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', 'Space'];
+const BOUND_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', 'Space', 'w', 'Shift'];
 
 export const MOVE_PAD = 5; // distance in pixel of a single move
 export const FALL_PAD = 5;
@@ -21,7 +21,7 @@ export class Game {
     private player: Player;
     private level: Level;
 
-    private pressingKeys: { [key: string]: boolean } = {};
+    private pressingKeys: { [key: string]: KeyboardEvent } = {};
     // private gameObjects: GameObject[] = [];
 
     private _areaSize: Dimension;
@@ -79,32 +79,22 @@ export class Game {
                 return;
             }
 
-            if (e.key === 'w') {
-                const newWall = this.terrainBuilder.generate();
-                newWall.blockCount = 3;
-                newWall.computeDimension();
-
-                const adjustCoords = this.player.inFrontOf();
-                if (this.player.lookLeft) {
-                    adjustCoords.x -= newWall.dimension.width;
-                }
-                newWall.coords = adjustCoords;
-
-                this.level.addGameObject(newWall);
-            }
-
-            if (this.isBoundKey(e.code)) {
-                this.pressingKeys[e.code] = true;
+            if (this.isBoundKey(e.code) || this.isBoundKey(e.key)) {
+                this.pressingKeys[e.code] = e;
             }
         });
 
         document.addEventListener('keyup', e => {
-            if (this.isBoundKey(e.code)) {
-                this.pressingKeys[e.code] = false;
+            if (this.isBoundKey(e.code) || this.isBoundKey(e.key)) {
+                this.pressingKeys[e.code] = null;
             }
 
             if (e.code === 'ArrowDown') {
                 this.player.uncrouch();
+            }
+
+            if (e.key === 'Shift') {
+                this.player.toggleRunning(false);
             }
         });
 
@@ -160,8 +150,16 @@ export class Game {
         }
     }
 
-    handleCommand(keyCode: string) {
-        const moveX = keyCode === 'ArrowLeft' ? -MOVE_PAD : (keyCode === 'ArrowRight' ? MOVE_PAD : null);
+    handleCommand(ev: KeyboardEvent) {
+        let moveX: number;
+        
+        if (['ArrowLeft', 'ArrowRight'].includes(ev.code)) {
+            moveX = MOVE_PAD * (this.player.running ? 1.75 : 1);
+            
+            if (ev.code === 'ArrowLeft') {
+                moveX *= -1;
+            }
+        }
 
         if (moveX) {
             this.player.updateLookDirection(moveX < 0);
@@ -169,7 +167,7 @@ export class Game {
 
         if (moveX && this.player.canMove({ x: moveX })) {
             this.player.moveX(moveX);
-        } else if (keyCode === 'ArrowDown') {
+        } else if (ev.code === 'ArrowDown') {
             this.player.crouch();
 
             if (this.player.canMove({ y: -MOVE_PAD })) {
@@ -177,11 +175,32 @@ export class Game {
             }
         }
 
-        if (keyCode === 'ArrowUp' && this.hitsAny(this.player, [this.level.archeGoal])) {
+        if (ev.key === 'Shift') {
+            this.player.toggleRunning(true);
+        }
+
+        if (ev.key === 'w') {
+            const newWall = this.terrainBuilder.generate();
+            newWall.blockCount = 3;
+            newWall.computeDimension();
+
+            const adjustCoords = this.player.inFrontOf();
+            if (this.player.lookLeft) {
+                adjustCoords.x -= newWall.dimension.width;
+            }
+            newWall.coords = adjustCoords;
+
+            this.level.addGameObject(newWall);
+
+            // make it wait until next keydown
+            this.pressingKeys[ev.code] = null;
+        }
+
+        if (ev.code === 'ArrowUp' && this.hitsAny(this.player, [this.level.archeGoal])) {
             this.onReachGoal();
         }
 
-        if (keyCode === 'Space' && this.player.canJump()) {
+        if (ev.code === 'Space' && this.player.canJump()) {
             this.player.initJump();
         }
     }
@@ -222,7 +241,7 @@ export class Game {
         const pressingKeys = this.getPressingKeys();
 
         if (pressingKeys.length) {
-            pressingKeys.forEach(code => this.handleCommand(code));
+            pressingKeys.forEach(ev => this.handleCommand(ev));
         } else {
             // not the best place ?
             this.player.idle();
@@ -276,7 +295,7 @@ export class Game {
     }
 
     getPressingKeys() {
-        return Object.keys(this.pressingKeys).filter(x => this.pressingKeys[x]);
+        return Object.values(this.pressingKeys).filter(x => !!x);
     }
 
     isBoundKey(keyCode: string) {

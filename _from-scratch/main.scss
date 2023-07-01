@@ -236,6 +236,23 @@ body {
     &.backward {
         transform: scaleX(-1);
     }
+
+    &.running {
+        &::after {
+            content: " ";
+            background-image: url('/images/run-dust.png');
+            transform: rotateY(180deg);
+            display: block;
+            width: 60px;
+            height: 25px;
+            z-index: 999;
+            position: absolute;
+            bottom: 0;
+            left: -30px;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
+    }
 }
 
 .wall {
